@@ -1,0 +1,8 @@
+photometry observation tsdb metric:
+
+<target>.<bandpass>.<dtype>.<version>
+
+    - target: point of interest (celestial object)
+    - bandpass: photometric filter (unique identifier)
+    - dtype: data type (photometry, spectroscopy)
+    - version: metric version
