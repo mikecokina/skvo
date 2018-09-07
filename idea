@@ -8,15 +8,17 @@ photometry observation tsdb metric:
     - version: metric version
 
 tags - photometry:
-    - error
     - time_frame_reference_position
     - flux_calibration_level
     - flux_calibration
     - source
     - exposure
 
+<target>.<bandpass>.error.<version>
+    - source
+    - dtype
+
 tags - spectroscopy:
-    - error
     - time_frame_reference_position
     - red_shift
     - source

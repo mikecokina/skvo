@@ -1,0 +1,51 @@
+# variables
+
+- hbase_home
+
+
+1. install java-jdk
+    >> sudo apt-get install default-jdk ???
+
+    >> sudo add-apt-repository ppa:webupd8team/java
+    >> sudo apt-get update
+    >> sudo apt-get install oracle-java8-installer
+
+2. create install dirs
+    >> sudo mkdir -p /opt/skvo/hbase
+    >> sudo chown -R skvo:skvo /opt/skvo/hbase
+
+3. export variables
+    >> export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+    >> export PATH=$PATH:${JAVA_HOME}bin
+
+    >> export HBASE_HOME=/opt/skvo/hbase // $hbase_home
+    >> export PATH=$PATH:$HBASE_HOME/bin
+
+4. download hbase
+    >> wget http://tux.rainside.sk/apache/hbase/stable/hbase-1.4.7-bin.tar.gz
+
+5. untar and copy hbase
+    >> tar -xf hbase-1.4.7-bin.tar.gz
+    >> cp -r hbase-1.4.7/* /opt/skvo/hbase/
+
+6. start hbase
+    >> start-hbase.sh
+    >> hbase-daemon.sh start thrift
+
+7. get opentsdb
+    >> wget https://github.com/OpenTSDB/opentsdb/releases/download/v2.3.0/opentsdb-2.3.0_all.deb
+
+8. install opentsdb
+    >> sudo dpkg -i opentsdb-2.3.0_all.deb
+
+9. create opentsdb tables
+    >> env COMPRESSION=NONE /usr/share/opentsdb/tools/create_table.sh
+
+10. configure opentsdb
+    - prepare jinja2 tempate
+
+11. add opentsdb bin to path
+    >> export PATH=$PATH:/usr/share/opentsdb/bin/
+
+12. start opentsdb
+    >> sudo systemctl start opentsdb
