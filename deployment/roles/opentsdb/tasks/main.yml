@@ -1,0 +1,86 @@
+# tasks file for opentsdb
+
+- name: copy install package
+  copy:
+    src: "{{ opentsdb_package }}"
+    dest: "{{ opentsdb_install_dir }}"
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0775
+
+- name: install opentsdb "{{ opentsdb_package }}"
+  apt: deb="{{ opentsdb_install_dir }}/{{ opentsdb_package }}"
+
+- name: configure opentsdb - copy config file
+  template:
+    src: opentsdb.conf
+    dest: "/etc/opentsdb/opentsdb.conf"
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0775
+  notify:
+    stop opentsdb
+    start opentsdb
+
+
+- name: ensure logging config file is in place
+  copy:
+    src: logback.xml
+    dest: /etc/opentsdb/logback.xml
+  notify:
+    stop opentsdb
+    start opentsdb
+
+- name: ensure that logrotate config file is in place
+  copy:
+    src: opentsdb.j2
+    dest: /etc/logrotate.d/opentsdb
+
+
+- name: setup logrotate to run each hour
+  file:
+    state: link
+    src: /etc/cron.daily/logrotate
+    dest: /etc/cron.hourly/logrotate
+  notify: restart cron
+
+- name: ensure cache dir is created
+  file:
+    path: "{{ opentsdb_cache_dir }}"
+    state: directory
+  notify:
+    stop opentsdb
+    start opentsdb
+
+- name: ensure opentsdb service is enabled
+  service:
+    name: opentsdb
+    enabled: true
+
+- name: ensure "{{ opentsdb_install_dir }}" dir is created
+  file:
+    path: "{{ opentsdb_install_dir }}"
+    state: directory 
+
+- name: copy opentsdb create_tables script
+  copy:
+    src: create_tables.sh
+    dest: "{{ opentsdb_install_dir }}/create_tables.sh"
+    mode: 0750
+  notify:
+    create opentsdb tables
+    stop opentsdb
+    start opentsdb
+
+- meta: flush_handlers
+
+- name: ensure that opentsdb is runnig
+  service:
+    name: opentsdb
+    state: started
+
+
+
+
+
+

@@ -1,0 +1,16 @@
+/var/log/opentsdb/*.log {
+    su root skvo
+    hourly
+    maxsize 500M
+    rotate 5
+    copytruncate
+    delaycompress
+    compress
+    notifempty
+    missingok
+    sharedscripts
+    postrotate
+      chmod 666 /var/log/opentsdb/opentsdb.log || true
+    endscript
+}
+

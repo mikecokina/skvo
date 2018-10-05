@@ -1,0 +1,5 @@
+---
+# defaults file for analyst
+hbase_root_dir: /home/{{ skvo_user }}/.hbasef
+hbase_home: /opt/{{ skvo_user }}/{{ hbase_version }}
+hbase_install_dir: /opt/{{ skvo_user }}/install

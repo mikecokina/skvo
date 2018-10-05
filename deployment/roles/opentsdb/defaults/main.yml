@@ -1,0 +1,15 @@
+---
+# defaults file for analyst
+skvo_user: skvo
+opentsdb_install_dir: /opt/{{ skvo_user }}/install
+
+opentsdb_cache_dir: /tmp/opentsdb
+opentsdb_zk_quorum: localhost
+
+opentsdb_hbase_data_table: tsdb
+opentsdb_hbase_uid_table: tsdb-uid
+opentsdb_hbase_tree_table: tsdb-tree
+opentsdb_hbase_meta_table: tsdb-meta
+opentsdb_hbase_compression: NONE
+
+hbase_home: /opt/{{ skvo_user }}/{{ hbase_version }}

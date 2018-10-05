@@ -1,0 +1,4 @@
+---
+# defaults file for analyst
+java_package: openjdk-8-jdk
+repo: ppa:webupd8team/java

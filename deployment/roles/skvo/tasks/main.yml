@@ -1,0 +1,45 @@
+# tasks file for skvo
+
+- name: install common packages
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - screen
+    - htop
+    - mariadb-server
+    - python-pip
+    - python3-pip      
+    
+- name: install virtualenv via pip3
+  pip:
+    name: virtualenv
+    executable: pip3
+    
+- name: ensure that local group is created
+  group:
+    name: "{{ skvo_user }}"
+    gid: 40001
+    
+- name: ensure that local user is created
+  user:
+    name: "{{ skvo_user }}"
+    uid: 40000
+    group: "{{ skvo_user }}"
+    password: pass
+    state: present
+    
+- name: check if opt exists 
+  stat:
+    path: "{{ base_path }}"
+  register: hbase_home_exists
+  
+  
+- name: create base dir
+  file:
+    path: "{{ base_path }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0755
+  when: hbase_home_exists.stat.exists == false

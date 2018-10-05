@@ -1,0 +1,26 @@
+# Inventory file for skvo environment
+[all:vars]
+env_name=skvo
+skvo_user=skvo
+
+opt_home = /opt/skvo
+base_path = /opt
+hbase_package=hbase-1.4.7-bin.tar.gz
+hbase_version=hbase-1.4.7
+
+opentsdb_package=opentsdb-2.3.0_all.deb
+
+
+
+[skvo]
+localhost
+
+[versions]
+localhost ansible_connection=local
+
+[vibes-web-app]
+localhost ansible_connection=local
+
+[opentsdb]
+localhost ansible_connection=local
+

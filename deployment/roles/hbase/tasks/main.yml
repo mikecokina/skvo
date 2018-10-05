@@ -1,0 +1,98 @@
+# tasks file for hbase
+
+- name: check if hbas home exists 
+  stat:
+    path: "{{ hbase_home }}"
+  register: hbase_home_exists
+
+
+- name: cleanup hbase home
+  file:
+    path: "{{ hbase_home }}"
+    state: absent
+  
+- name: create hbase home
+  file:
+    path: "{{ hbase_home }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0775
+
+- name: cleanup install dir
+  file:
+    path: "{{ hbase_install_dir }}"
+    state: absent
+  
+- name: create install dir
+  file:
+    path: "{{ hbase_install_dir }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0775
+    
+- name: create hbase root directory
+  file:
+    path: "{{ hbase_root_dir }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0775
+    
+- name: copy hbase install package
+  copy:
+    src: "{{ hbase_package }}"
+    dest: "{{ hbase_install_dir }}"
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0775
+    
+- name: decompress "{{ hbase_package }}"
+  unarchive:
+    src: "{{ hbase_install_dir }}/{{ hbase_package }}"
+    dest: "{{ hbase_install_dir }}"
+    copy: no
+    
+- name: copy hbase to destination
+  command: mv "{{ hbase_install_dir }}/{{ hbase_version }}" "{{ opt_home }}"
+
+- name: changing owner
+  command: chown -R "{{ skvo_user }}:{{ skvo_user }}" "{{ hbase_home }}"
+
+- name: changing permission
+  command: chmod -R 775 "{{ hbase_home }}"
+  
+- name: get java home
+  raw: readlink -f /usr/bin/java | sed "s:bin/java::"
+  register: java_home
+  
+- name: configure "{{ hbase_home }}/conf/hbase-env.sh"
+  raw: echo export JAVA_HOME="{{ java_home.stdout }}" >> "{{ hbase_home }}/conf/hbase-env.sh"
+  
+- name: generate "{{ hbase_home }}/conf/hbase-site.xml"
+  template:
+    src: hbase-site.xml.j2
+    dest: "{{ hbase_home }}/conf/hbase-site.xml"
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0640
+
+- name: start hbase
+  command: ${HBASE_HOME}/bin/start-hbase.sh && ${HBASE_HOME}/bin/hbase-daemon.sh start thrift
+  environment:
+    HBASE_HOME: "{{ hbase_home }}"
+    JAVA_HOME: "{{ java_home }}"
+
+    
+
+
+
+
+
+
+
+
+    
+    
+
