@@ -25,17 +25,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # config
 venv_config = os.path.join(os.environ.get('VIRTUAL_ENV', ''), 'conf', 'skvo.ini')
 
-if os.path.isfile(venv_config):
-    config_file = venv_config
-else:
+if not os.path.isfile(venv_config):
     raise LookupError("Couldn't resolve configuration file. To define it \n "
                       "  - add conf/skvo.ini under your virtualenv root\n")
 
 config = ConfigParser(defaults={
     'config': '',
 })
-logger.info("Parse config file: {}".format(config_file))
-
+logger.info("Parse config file: {}".format(venv_config))
+config.read(venv_config)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -58,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -101,7 +100,6 @@ WSGI_APPLICATION = 'skvo.wsgi.application'
 #     }
 # }
 
-# todo: add config file
 DATABASES = {
     'default': {
         'ENGINE': config.get('database', 'engine'),
