@@ -73,10 +73,23 @@ WSGI_APPLICATION = 'skvo.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
+# todo: add config file
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': config.get('database', 'engine'),
+        'NAME': config.get('database', 'name'),
+        'USER': config.get('database', 'user'),
+        'HOST': config.get('database', 'host'),
+        'PORT': config.get('database', 'port'),
+        'PASSWORD': config.get('database', 'password'),
+        'DEFAULT_CHARSET': config.get('database', 'default-character-set'),
     }
 }
 
