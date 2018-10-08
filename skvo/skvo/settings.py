@@ -11,9 +11,30 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import logging
+from configparser import ConfigParser
+
+# quick log settings
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s : [%(levelname)s] : %(name)s : %(message)s')
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+# config
+venv_config = os.path.join(os.environ.get('VIRTUAL_ENV', ''), 'conf', 'skvo.ini')
+
+if os.path.isfile(venv_config):
+    config_file = venv_config
+else:
+    raise LookupError("Couldn't resolve configuration file. To define it \n "
+                      "  - add conf/skvo.ini under your virtualenv root\n")
+
+config = ConfigParser(defaults={
+    'config': '',
+})
+logger.info("Parse config file: {}".format(config_file))
 
 
 # Quick-start development settings - unsuitable for production
@@ -89,7 +110,7 @@ DATABASES = {
         'HOST': config.get('database', 'host'),
         'PORT': config.get('database', 'port'),
         'PASSWORD': config.get('database', 'password'),
-        'DEFAULT_CHARSET': config.get('database', 'default-character-set'),
+        'DEFAULT_CHARSET': config.get('database', 'default_character_set'),
     }
 }
 
