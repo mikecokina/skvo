@@ -1,0 +1,13 @@
+
+
+data
+    `- source
+             `- dtype
+                     `- imgs
+                     |      `- yyyymm
+                     |               `- objectuid_yyyymmdd [night start]
+                     |                                                  `- objectuid_yyyymmdd_id.jpeg/png/whatever
+                     `- dtables
+                               `- yyyymm
+                                        `- objectuid_yyyymmdd [night start]
+                                                                           `- objectuid_yyyymmdd_id.csv

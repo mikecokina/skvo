@@ -1,5 +1,21 @@
 import argparse
-from conf import conf
+from conf import config
+
+
+def read_file():
+    pass
+
+
+def get_md5():
+    pass
+
+
+def prepare_message():
+    pass
+
+
+def run():
+    pass
 
 
 def main():
@@ -16,17 +32,19 @@ def main():
     args = parser.parse_args()
 
     if args.config:
-        conf.read_and_update_config(args.config)
+        config.read_and_update_config(args.config)
 
-    conf.CONF_FILE = args.conf or conf.CONFIG_FILE
-    conf.LOG_CONFIG = args.log or conf.LOG_CONFIG
+    config.CONFIG_FILE = args.config or config.CONFIG_FILE
+    config.LOG_CONFIG = args.log or config.LOG_CONFIG
 
-    conf.OPENTSDB_HOST = args.tsdb_host or conf.OPENTSDB_HOST
-    conf.OPENTSDB_PORT = args.tsdb_port or conf.OPENTSDB_PORT
-    conf.OPENTSDB_PROTOCOL = args.tsdb_protocol or conf.OPENTSDB_PROTOCOL
-    conf.OPENTSDB_BATCH_SIZE = args.tsdb_batch_size or conf.OPENTSDB_BATCH_SIZE
+    config.OPENTSDB_HOST = args.tsdb_host or config.OPENTSDB_HOST
+    config.OPENTSDB_PORT = args.tsdb_port or config.OPENTSDB_PORT
+    config.OPENTSDB_PROTOCOL = args.tsdb_protocol or config.OPENTSDB_PROTOCOL
+    config.OPENTSDB_BATCH_SIZE = args.tsdb_batch_size or config.OPENTSDB_BATCH_SIZE
 
-    conf.set_up_logging()
+    config.set_up_logging()
+
+    run()
 
 if __name__ == '__main__':
     main()
