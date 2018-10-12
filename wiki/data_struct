@@ -11,3 +11,7 @@ data
                                `- yyyymm
                                         `- objectuid_yyyymmdd [night start]
                                                                            `- objectuid_yyyymmdd_id.csv
+
+
+source - upjs, vhao, kolonica, etc.
+dtype - spectroscopy, photometry, etc.
