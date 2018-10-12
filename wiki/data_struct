@@ -10,7 +10,8 @@ data
                      `- dtables
                                `- yyyymm
                                         `- objectuid_yyyymmdd [night start]
-                                                                           `- objectuid_yyyymmdd_id.csv
+                                                                           `- objectuid_yyyymmdd_data_id.csv [observation data]
+                                                                           `- objectuid_yyyymmdd_meta_id.csv [metaddata]
 
 
 source - upjs, vhao, kolonica, etc.
