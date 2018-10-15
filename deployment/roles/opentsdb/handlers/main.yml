@@ -14,12 +14,12 @@
 - name: stop opentsdb
   service:
     name: opentsdb
-    state: stop
+    state: stopped
 
 - name: start opentsdb
   service:
     name: opentsdb
-    state: start
+    state: started
 
 - name: restart cron
   service:

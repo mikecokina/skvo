@@ -79,20 +79,13 @@
     mode: 0640
 
 - name: start hbase
-  command: ${HBASE_HOME}/bin/start-hbase.sh && ${HBASE_HOME}/bin/hbase-daemon.sh start thrift
+  command: ${HBASE_HOME}/bin/start-hbase.sh
   environment:
     HBASE_HOME: "{{ hbase_home }}"
     JAVA_HOME: "{{ java_home }}"
 
-    
-
-
-
-
-
-
-
-
-    
-    
-
+- name: start thrift
+  command: ${HBASE_HOME}/bin/hbase-daemon.sh start thrift
+  environment:
+    HBASE_HOME: "{{ hbase_home }}"
+    JAVA_HOME: "{{ java_home }}"
