@@ -17,6 +17,8 @@ if not os.path.isfile(venv_config):
 CONFIG_FILE = venv_config
 LOG_CONFIG = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'conf', 'skvo-log.json')
 
+BASE_PATH = os.path.expanduser("~/data")
+
 OPENTSDB_HOST = "localhost"
 OPENTSDB_PORT = 4242
 OPENTSDB_PROTOCOL = "http"
@@ -60,3 +62,7 @@ def update():
 
         global OPENTSDB_PROTOCOL
         OPENTSDB_PROTOCOL = parser.getint("protocol", OPENTSDB_PROTOCOL)
+
+    if parser.has_section("general"):
+        global BASE_PATH
+        BASE_PATH = parser.get("base_path", BASE_PATH)
