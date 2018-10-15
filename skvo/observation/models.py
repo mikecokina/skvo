@@ -21,7 +21,7 @@ class Target(models.Model):
 
 class Bandpass(models.Model):
     bandpass = models.CharField(max_length=32, null=False)
-    spectral_bend_type = models.CharField(choices=BANDPASS_SPECTRAL_BEND_TYPES, null=False)
+    spectral_band_type = models.CharField(choices=BANDPASS_SPECTRAL_BEND_TYPES, null=False)
     photometric_system = models.CharField(max_length=32, null=False)
     unique_identifier = models.CharField(max_length=32, null=False)
     edited = models.DateTimeField(auto_now_add=True)
