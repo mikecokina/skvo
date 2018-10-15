@@ -1,3 +1,16 @@
+
+- name: create opentsdb tables
+  shell: "{{ opentsdb_install_dir }}/create_tables.sh"
+  args:
+    executable: /bin/bash
+  environment:
+    TSDB_TABLE: "{{ opentsdb_hbase_data_table }}"
+    UID_TABLE: "{{ opentsdb_hbase_uid_table }}"
+    TREE_TABLE: "{{ opentsdb_hbase_tree_table }}"
+    META_TABLE: "{{ opentsdb_hbase_meta_table }}"
+    COMPRESSION: "{{ opentsdb_hbase_compression }}"
+    HBASE_HOME: "{{ hbase_home }}"
+
 - name: stop opentsdb
   service:
     name: opentsdb
@@ -12,16 +25,3 @@
   service:
     name: crond
     state: restarted
-
-- name: create opentsdb tables
-  shell: "{{ opentsdb_install_dir }}/create_tables.sh"
-  args:
-    executable: /bin/bash
-  environment:
-    TSDB_TABLE: "{{ opentsdb_hbase_data_table }}"
-    UID_TABLE: "{{ opentsdb_hbase_uid_table }}"
-    TREE_TABLE: "{{ opentsdb_hbase_tree_table }}"
-    META_TABLE: "{{ opentsdb_hbase_meta_table }}"
-    COMPRESSION: "{{ opentsdb_hbase_compression }}"
-    HBASE_HOME: "{{ hbase_home }}"
-

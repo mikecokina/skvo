@@ -19,8 +19,8 @@
     group: "{{ skvo_user }}"
     mode: 0775
   notify:
-    stop opentsdb
-    start opentsdb
+    - stop opentsdb
+    - start opentsdb
 
 
 - name: ensure logging config file is in place
@@ -28,8 +28,8 @@
     src: logback.xml
     dest: /etc/opentsdb/logback.xml
   notify:
-    stop opentsdb
-    start opentsdb
+    - stop opentsdb
+    - start opentsdb
 
 - name: ensure that logrotate config file is in place
   copy:
@@ -49,8 +49,8 @@
     path: "{{ opentsdb_cache_dir }}"
     state: directory
   notify:
-    stop opentsdb
-    start opentsdb
+    - stop opentsdb
+    - start opentsdb
 
 - name: ensure opentsdb service is enabled
   service:
@@ -68,9 +68,9 @@
     dest: "{{ opentsdb_install_dir }}/create_tables.sh"
     mode: 0750
   notify:
-    create opentsdb tables
-    stop opentsdb
-    start opentsdb
+    - create opentsdb tables
+    - stop opentsdb
+    - start opentsdb
 
 - meta: flush_handlers
 
