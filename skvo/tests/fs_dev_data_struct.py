@@ -3,7 +3,8 @@ import logging
 import os
 import random
 import re
-
+import pylab as plt
+import numpy as np
 import pandas as pd
 from pandas.io import json
 
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 RAs = {"W_UMa": 9.43, "bet_Per": 3.08, "bet_Lyr": 18.5}
 DEs = {"W_UMa": 55.57, "bet_Per": 40.57, "bet_Lyr": 33.21}
 
-MOCK_DATA_LENGTH = 50
+MOCK_DATA_LENGTH = 30
 DEFAULT_BASE_PATH = os.path.join(os.path.expanduser("~/"), "skvo_data")
 CATALOGUE = "default"
 DEFAULT_DEV_DATA_STRUCT = {
@@ -173,13 +174,19 @@ def prepare_photometry_dtables():
 
     return {path: fill_basic_photometry_dtable_df(
         parse_datetime_from_path(path) + datetime.timedelta(seconds=1))
-        for path in paths if "photometry" in path and not "media" in path}
+        for path in paths if "photometry" in path and "media" not in path}
 
 
 def prepare_photometry_metatables():
     paths = expand_dict(DEFAULT_DEV_DATA_STRUCT)
     return {path: fill_basic_photometry_metatable_df(path)
             for path in paths if "photometry" in path and "media" not in path}
+
+
+def prepare_photometry_media():
+    paths = expand_dict(DEFAULT_DEV_DATA_STRUCT)
+    return {path: {"{}.png".format(idx): generate_random_image() for idx in range(MOCK_DATA_LENGTH)}
+            for path in paths if "photometry" in path and "media" in path}
 
 
 def parse_bandpass_uid_from_path(path):
@@ -208,12 +215,31 @@ def prepare_data():
     logger.info("Preparing mock data")
     p_dtables = prepare_photometry_dtables()
     p_metatables = prepare_photometry_metatables()
+    p_media = prepare_photometry_media()
 
     for key in p_dtables.keys():
         metatable_path = os.path.join(DEFAULT_BASE_PATH, key, "{}_meta.csv".format(parse_tablename_from_path(key)))
         dtable_path = os.path.join(DEFAULT_BASE_PATH, key, "{}_data.csv".format(parse_tablename_from_path(key)))
         p_dtables[key].to_csv(dtable_path, index=False)
         p_metatables[key].to_csv(metatable_path, index=False)
+
+    for path_to_band_dir, media in p_media.items():
+        for png, img in media.items():
+            date = parse_datetime_from_path(path_to_band_dir)
+            date_suffix = "{}{}{}".format(date.year, date.month, date.day)
+
+            path = os.path.join(DEFAULT_BASE_PATH, path_to_band_dir, "{}_{}".format(date_suffix, png))
+            save_image(path, img)
+
+
+def generate_random_image():
+    matrix = np.random.random((5, 5))
+    return matrix
+
+
+def save_image(path, img):
+    plt.imshow(img, cmap='gray', interpolation='nearest')
+    plt.savefig(path)
 
 
 def main():
