@@ -6,12 +6,14 @@ data
                      `- imgs
                      |      `- yyyymm
                      |               `- objectuid_yyyymmdd [datetime when observation starts]
+                     |                                    `-bandpass_uid
                      |                                                  `- objectuid_yyyymmdd_id.jpeg/png/whatever
                      `- dtables
                                `- yyyymm
                                         `- objectuid_yyyymmdd [datetime when observation starts]
-                                                                           `- objectuid_yyyymmdd_data_id.csv [observation data]
-                                                                           `- objectuid_yyyymmdd_meta_id.csv [metaddata]
+                                                              `-bandpass_uid
+                                                                            `- objectuid_yyyymmdd_data_id.csv [observation data]
+                                                                            `- objectuid_yyyymmdd_meta_id.csv [metaddata]
 
 
 source - upjs, vhao, kolonica, etc.

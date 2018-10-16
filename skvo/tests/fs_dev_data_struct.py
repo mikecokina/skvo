@@ -1,22 +1,18 @@
 import datetime
 import logging
 import os
-import pandas as pd
 import random
 import re
 
+import pandas as pd
 from pandas.io import json
-
 
 # quick log settings
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s : [%(levelname)s] : %(name)s : %(message)s')
 logger = logging.getLogger(__name__)
 
-
 RAs = {"W_UMa": 9.43, "bet_Per": 3.08, "bet_Lyr": 18.5}
 DEs = {"W_UMa": 55.57, "bet_Per": 40.57, "bet_Lyr": 33.21}
-
-BADNPASSES_UID = ["sdss.u", "bessel.b", "bessel.r"]
 
 MOCK_DATA_LENGTH = 50
 DEFAULT_BASE_PATH = os.path.join(os.path.expanduser("~/"), "skvo_data")
@@ -25,14 +21,38 @@ DEFAULT_DEV_DATA_STRUCT = {
     "upjs": {
         "photometry": {
             "media": {
-                "201712": {"bet_Per_20171202", "bet_Lyr_20171204", "W_UMa_20171204"},
-                "201801": {"bet_Per_20180102", "bet_Lyr_20180102", "W_UMa_20180103"},
-                "201802": {"bet_Per_20180202", "bet_Lyr_20180202", "W_UMa_20180202"}
+                "201712": {
+                    "bet_Per_20171202": {"johnson.u", "sloan.u"},
+                    "bet_Lyr_20171204": {"johnson.u", "sloan.u"},
+                    "W_UMa_20171204": {"johnson.u", "sloan.u"}
+                },
+                "201801": {
+                    "bet_Per_20180102": {"johnson.u", "sloan.u"},
+                    "bet_Lyr_20180102": {"johnson.u", "sloan.u"},
+                    "W_UMa_20180103": {"johnson.u", "sloan.u"}
+                },
+                "201802": {
+                    "bet_Per_20180202": {"johnson.u", "sloan.u"},
+                    "bet_Lyr_20180202": {"johnson.u", "sloan.u"},
+                    "W_UMa_20180202": {"johnson.u", "sloan.u"}
+                }
             },
             "dtables": {
-                "201712": {"bet_Per_20171202", "bet_Lyr_20171204", "W_UMa_20171204"},
-                "201801": {"bet_Per_20180102", "bet_Lyr_20180102", "W_UMa_20180103"},
-                "201802": {"bet_Per_20180202", "bet_Lyr_20180202", "W_UMa_20180202"}
+                "201712": {
+                    "bet_Per_20171202": {"johnson.u", "sloan.u"},
+                    "bet_Lyr_20171204": {"johnson.u", "sloan.u"},
+                    "W_UMa_20171204": {"johnson.u", "sloan.u"}
+                },
+                "201801": {
+                    "bet_Per_20180102": {"johnson.u", "sloan.u"},
+                    "bet_Lyr_20180102": {"johnson.u", "sloan.u"},
+                    "W_UMa_20180103": {"johnson.u", "sloan.u"}
+                },
+                "201802": {
+                    "bet_Per_20180202": {"johnson.u", "sloan.u"},
+                    "bet_Lyr_20180202": {"johnson.u", "sloan.u"},
+                    "W_UMa_20180202": {"johnson.u", "sloan.u"}
+                }
 
             }
         },
@@ -51,10 +71,16 @@ DEFAULT_DEV_DATA_STRUCT = {
     "vhao": {
         "photometry": {
             "media": {
-                "201712": {"bet_Lyr_20171221", "W_UMa_20171204"},
+                "201712": {
+                    "bet_Lyr_20171221": {"sdss.g"},
+                    "W_UMa_20171204": {"bessel.r"}
+                },
             },
             "dtables": {
-                "201712": {"bet_Lyr_20171221", "W_UMa_20171204"},
+                "201712": {
+                    "bet_Lyr_20171221": {"sdss.g"},
+                    "W_UMa_20171204": {"bessel.r"}
+                },
             }
         },
     }
@@ -103,8 +129,8 @@ def fill_basic_photometry_metatable_df(path):
     df = pd.Series()
     target = parse_target_from_path(path)
     target_ra, target_de = RAs[target], DEs[target]
-    band = BADNPASSES_UID[random.randint(0, 2)]
-    instrument = "xyz" if target in["W_UMa"] else "uvw"
+    band = parse_bandpass_uid_from_path(path)
+    instrument = "xyz" if target in ["W_UMa"] else "uvw"
     source = parse_source_from_path(path)
 
     df["target.target"] = target
@@ -153,21 +179,25 @@ def prepare_photometry_dtables():
 def prepare_photometry_metatables():
     paths = expand_dict(DEFAULT_DEV_DATA_STRUCT)
     return {path: fill_basic_photometry_metatable_df(path)
-            for path in paths if "photometry" in path and not "media" in path}
+            for path in paths if "photometry" in path and "media" not in path}
+
+
+def parse_bandpass_uid_from_path(path):
+    return path.split(os.sep)[-1]
 
 
 def parse_datetime_from_path(path):
-    dt = path.split(os.sep)[-1].split("_")[-1]
+    dt = path.split(os.sep)[-2].split("_")[-1]
     rs = re.search(r"([0-9]{4})([0-9]{2})([0-9]{2})", dt)
     return datetime.datetime(int(rs[1]), int(rs[2]), int(rs[3]))
 
 
 def parse_tablename_from_path(path):
-    return path.split(os.sep)[-1]
+    return path.split(os.sep)[-2]
 
 
 def parse_target_from_path(path):
-    return "_".join(path.split(os.sep)[-1].split("_")[:-1])
+    return "_".join(path.split(os.sep)[-2].split("_")[:-1])
 
 
 def parse_source_from_path(path):
