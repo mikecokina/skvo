@@ -66,3 +66,9 @@ def update():
     if parser.has_section("general"):
         global BASE_PATH
         BASE_PATH = parser.get("base_path", BASE_PATH)
+
+
+DTYPES_BASE_DIR = {
+    "photometry": "photometry",
+    "spectroscopy": "spectroscopy"
+}

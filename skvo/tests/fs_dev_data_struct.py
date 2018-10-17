@@ -8,6 +8,9 @@ import numpy as np
 import pandas as pd
 from pandas.io import json
 
+from datapipe.photometry.filesystem import parse_bandpass_uid_from_path
+from datapipe.photometry.filesystem import parse_target_from_path
+
 # quick log settings
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s : [%(levelname)s] : %(name)s : %(message)s')
 logger = logging.getLogger(__name__)
@@ -189,10 +192,6 @@ def prepare_photometry_media():
             for path in paths if "photometry" in path and "media" in path}
 
 
-def parse_bandpass_uid_from_path(path):
-    return path.split(os.sep)[-1]
-
-
 def parse_datetime_from_path(path):
     dt = path.split(os.sep)[-2].split("_")[-1]
     rs = re.search(r"([0-9]{4})([0-9]{2})([0-9]{2})", dt)
@@ -201,10 +200,6 @@ def parse_datetime_from_path(path):
 
 def parse_tablename_from_path(path):
     return path.split(os.sep)[-2]
-
-
-def parse_target_from_path(path):
-    return "_".join(path.split(os.sep)[-2].split("_")[:-1])
 
 
 def parse_source_from_path(path):

@@ -30,4 +30,3 @@ class OpenTsdbHttpImporter(object):
 
     def send(self):
         pass
-
