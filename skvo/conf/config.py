@@ -72,3 +72,9 @@ DTYPES_BASE_DIR = {
     "photometry": "photometry",
     "spectroscopy": "spectroscopy"
 }
+
+SCHAR_PATTERN = r'[^a-zA-Z0-9_]'
+SCHAR_REVERSE = r'(\-){1}([a-z0-9]){2}'
+
+
+TIMESTAMP_PARSING_COLUMNS = ["ts.timestamp"]

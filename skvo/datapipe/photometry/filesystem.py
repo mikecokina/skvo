@@ -81,10 +81,6 @@ def parse_date_from_path(path):
     return _parse_dt_from_path(path, datetime.date)
 
 
-def get_dtable_name_on_path(path):
-    pass
-
-
 def _get_dtable_from_path(path, table_type):
     target_fs_uid = parse_target_from_path(path)
     start_date = parse_date_from_path(path)
@@ -103,3 +99,7 @@ def normalize_path(path):
     split_path = path.split(os.sep)
     split_path = [sign for sign in split_path if sign not in [os.sep]]
     return os.sep.join(split_path)
+
+
+def get_media_list_on_path(path, condition):
+    pass

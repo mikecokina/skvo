@@ -66,14 +66,15 @@ class DataId(models.Model):
 
 
 class Observation(models.Model):
-    access_id = models.ForeignKey(to=AccessRight, on_delete=models.PROTECT)
+    observation_uuid = models.CharField(max_length=128, null=False)
+    access_id = models.ForeignKey(to=AccessRights, on_delete=models.PROTECT)
     target_id = models.ForeignKey(to=Target, on_delete=models.PROTECT)
     instrument_id = models.ForeignKey(to=Instrument, on_delete=models.PROTECT)
     facility_id = models.ForeignKey(to=Facility, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
 
 
-class AccessRight(models.Model):
+class AccessRights(models.Model):
     access = models.CharField(choices=ACCESS_RIGHT, null=False)
     created = models.DateTimeField(auto_now_add=True)
 

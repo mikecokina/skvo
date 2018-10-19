@@ -1,9 +1,11 @@
 import argparse
 import logging
 import os
+import datetime
 
 from conf import config
 from datapipe.photometry import filesystem as fs
+from datapipe.photometry import read
 from datapipe.photometry import transform
 
 
@@ -29,9 +31,16 @@ def run():
             dtable_name = fs.get_dtable_name_from_path(full_dtables_path)
             metatable_name = fs.get_metatable_name_from_path(full_dtables_path)
 
+            logger.debug("reading metadata and data for object: {}, datetime: {}, bandpass: {}, source: {}"
+                         "".format(target_fs_uid, datetime.date.strftime(start_date, "%Y-%m-%d"),
+                                   bandpass_fs_uid, source))
 
+            metadata = read.read_csv_file(os.path.join(full_dtables_path, metatable_name))
+            data = read.read_csv_file(os.path.join(full_dtables_path, dtable_name))
 
-
+            df = transform.join_photometry_data(data, metadata)
+            tsdb_metrics = transform.photometry_data_df_to_tsdb_metrics(df, source)
+            pass
 
 
     # importer = None

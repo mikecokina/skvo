@@ -3,6 +3,8 @@ from collections import Iterable
 import numpy as np
 import pandas as pd
 
+from conf.config import TIMESTAMP_PARSING_COLUMNS
+
 
 def _to_array(iterable_or_scalar):
     # we use object dtype in order to allow int64 and np.nan in single array
@@ -96,3 +98,28 @@ def unix_timestamp_to_tsdb(unix_timestamp, unit='ns'):
     pd_ts = unix_timestamp_to_pd(unix_timestamp, unit=unit)
     tsdb_ts = pd_timestamp_to_unix(pd_ts, unit='ms')
     return tsdb_ts
+
+
+def parse_timestamp(df):
+    """
+    Extract single timestamp series from data
+
+    :param df: pandas.DataFrame
+    :return: pandas.Series of pandas.Timestamp
+    """
+    timestamp = pd.Series(dtype=np.dtype('<M8[ns]'), index=df.index)
+    for time_col in TIMESTAMP_PARSING_COLUMNS:
+        if timestamp.hasnans and time_col in df:
+            dt_series = df[time_col]
+            if dt_series.dtype not in (np.dtype('<M8[ns]'), np.dtype('datetime64[ns]')):
+                dt_series = pd.to_datetime(dt_series, errors='coerce')
+            timestamp.loc[timestamp.isnull()] = dt_series.loc[timestamp.isnull()]
+    return timestamp
+
+
+# def pandas_ts_cols_to_unix_ts_cols(df, unit='ns'):
+#     df = df.copy()
+#     for c in conf.TIME_FIELDS:
+#         if c in df:
+#             df[c] = time_utils.pandas_timestamp_to_unix(df[c], unit=unit)
+#     return df

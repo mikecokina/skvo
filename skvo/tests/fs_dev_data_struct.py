@@ -139,7 +139,7 @@ def fill_basic_photometry_metatable_df(path):
 
     df["target.target"] = target
     df["target.catalogue"] = CATALOGUE
-    df["target.catalogue_value"] = "{}.{}".format(CATALOGUE, target)
+    df["target.catalogue_value"] = "{}".format(target)
     df["target.description"] = "{} description".format(target)
     df["target.right_ascension"] = target_ra
     df["target.declination"] = target_de
