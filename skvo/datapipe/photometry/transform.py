@@ -39,25 +39,61 @@ def photometry_data_df_to_tsdb_metrics(df, source):
     df_timestamp = time_utils.parse_timestamp(df)
     timestamp = time_utils.pd_timestamp_to_unix(df_timestamp, unit='ms')
 
-    for i in range(df.shape[0]):
-        print(get_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
-                                   df["bandpass.bandpass_uid"].iloc[i]))
-    # metrics = [
-    #     {
-    #         'metric': metric_names[col],
-    #         'timestamp': int(ts),
-    #         'value': val,
-    #         'tags':
-    #             {
-    #                 'source': source,
-    #                 'type': 'analog',
-    #                 'package': package_sn,
-    #                 'tag_name': _get_metric_tag_name(col)
-    #             }
-    #     }
-    #     for col in value_columns
-    #     for ts, val, is_valid in zip(timestamp.values, df[col], is_valid_tsdb_series(df[col])) if is_valid
-    # ]
-    #
-    # return TsdbMetric(metrics, source, package_sn)
-    pass
+    metrics = [
+        {
+            'metric': get_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
+                                           df["bandpass.bandpass_uid"].iloc[i]),
+            'timestamp': timestamp.iloc[i],
+            'value': df["ts.magnitude"].iloc[i],
+            'tags':
+                {
+                    'instrument': source,
+                    'target': df["target.target"].iloc[0],
+                    'source': source
+                }
+        }
+        for i in range(timestamp.shape[0])
+    ]
+
+    return metrics
+
+
+def photometry_data_df_to_tsdb_meta_metrics(df, source):
+    df.reset_index(inplace=True, drop=True)
+    df_timestamp = time_utils.parse_timestamp(df)
+    timestamp = time_utils.pd_timestamp_to_unix(df_timestamp, unit='ms')
+
+    metrics = [
+        {
+            'metric': get_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
+                                           df["bandpass.bandpass_uid"].iloc[i]),
+            'timestamp': timestamp.iloc[i],
+            'value': df["ts.magnitude"].iloc[i],
+            'tags':
+                {
+                    'instrument': source,
+                    'target': df["target.target"].iloc[0],
+                    'source': source,
+                    'bandpass': df["bandpass.bandpass_uid"].iloc[i]
+                }
+        }
+        for i in range(timestamp.shape[0])
+    ]
+
+    return metrics
+
+
+def photometry_data_to_metadata_json(metadata_df, data_df, source):
+    df = data_df.copy()
+    df_timestamp = time_utils.parse_timestamp(df)
+    timestamp = time_utils.pd_timestamp_to_unix(df_timestamp, unit='ms')
+    df["ts.unix"] = timestamp
+
+    metadata = dict(
+        **metadata_df.iloc[0].to_dict(),
+        start_date=df["ts.timestamp"][df.first_valid_index()],
+        end_date=df["ts.timestamp"][df.last_valid_index()],
+        source=source
+    )
+
+    return metadata

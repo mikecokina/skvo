@@ -29,7 +29,7 @@ from lookup.views import LookupGetView
 def api_root(request, *args, **kwargs):
     return Response({
         'search': reverse('search', request=request),
-        'upload': reverse('upload', request=request),
+        'metadata': reverse('metadata', request=request),
     })
 
 
@@ -43,5 +43,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^api/$', api_root),
     url(r'^api/', include('lookup.urls')),
-    url(r'^api/', include('datapipe.urls')),
+    url(r'^api/', include('observation.urls')),
 ]

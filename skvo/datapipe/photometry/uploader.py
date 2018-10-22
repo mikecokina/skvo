@@ -7,6 +7,7 @@ from conf import config
 from datapipe.photometry import filesystem as fs
 from datapipe.photometry import read
 from datapipe.photometry import transform
+from datapipe.importers import MetadataHttpImporter
 
 
 class PhotometryProcessor(object):
@@ -21,6 +22,8 @@ def run():
 
     sources = fs.get_sources(config.BASE_PATH)
     data_locations = fs.get_data_locations(config.BASE_PATH, sources)
+
+    metadata_importer = MetadataHttpImporter(host="localhost", port=8082, protocol="http")
 
     for source, dtables_paths in data_locations.items():
         for dtables_path in dtables_paths:
@@ -40,8 +43,8 @@ def run():
 
             df = transform.join_photometry_data(data, metadata)
             tsdb_metrics = transform.photometry_data_df_to_tsdb_metrics(df, source)
-            pass
-
+            metadata_json = transform.photometry_data_to_metadata_json(metadata, data, source)
+            metadata_importer.imp(metadata_json)
 
     # importer = None
     # photometry_loader = transform.get_photometry_loader(transform=None, init_sink=None)

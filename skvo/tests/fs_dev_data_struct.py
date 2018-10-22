@@ -147,7 +147,7 @@ def fill_basic_photometry_metatable_df(path):
 
     df["bandpass.bandpass"] = band
     df["bandpass.bandpass_uid"] = "uid.{}".format(band)
-    df["bandpass.spectral_band_type"] = "visual"
+    df["bandpass.spectral_band_type"] = "optical"
     df["bandpass.photometric_system"] = "sys"
 
     df["instrument.instrument"] = "instrument.{}".format(instrument)
@@ -169,6 +169,8 @@ def fill_basic_photometry_metatable_df(path):
     df["dataid.title"] = "title.{}".format(source)
     df["dataid.publisher"] = "publisher.{}".format(source)
     df["dataid.publisher_did"] = "http://publisher_did.{}".format(source)
+
+    df["access.access"] = "open"
     return pd.DataFrame(df).T
 
 
