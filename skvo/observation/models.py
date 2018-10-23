@@ -13,7 +13,7 @@ BANDPASS_SPECTRAL_BEND_TYPES = [
     ('gammaray', 'gammaray')
 ]
 
-DTYPES = [("photomery", "photomery"), ("spectroscopy", "spectroscopy")]
+DTYPES = [("photometry", "photometry"), ("spectroscopy", "spectroscopy")]
 ACCESS_RIGHT = [("open", "open"), ("on_demand", "on_demand"), ("restricted", "restricted")]
 
 
@@ -43,8 +43,8 @@ class Instrument(models.Model):
     instrument = models.CharField(max_length=64, null=False)
     instrument_uid = models.CharField(max_length=128, null=False, unique=True)
     telescope = models.CharField(max_length=64, null=False)
-    camera = models.CharField(max_length=64, null=False)
-    spectroscope = models.CharField(max_length=64, null=True)
+    camera = models.CharField(max_length=64, null=True, default=None)
+    spectroscope = models.CharField(max_length=64, null=True, default=None)
     field_of_view = models.DecimalField(max_digits=20, decimal_places=10, null=False)
     description = models.CharField(max_length=256, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -60,12 +60,20 @@ class Facility(models.Model):
 class Organisation(models.Model):
     organisation = models.CharField(max_length=128, null=False)
     organisation_did = models.CharField(max_length=128, null=False, unique=True)
-    email = models.CharField(max_length=128, null=False)
+    email = models.EmailField(max_length=128, null=False)
     created = models.DateTimeField(auto_now_add=True)
 
 
 class AccessRights(models.Model):
     access = models.CharField(choices=ACCESS_RIGHT, null=False, max_length=32, unique=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+
+class DataId(models.Model):
+    title = models.CharField(max_length=32, null=False)
+    publisher = models.CharField(max_length=128, null=False)
+    publisher_did = models.CharField(max_length=128, null=False)
+    organisation = models.ForeignKey(to=Organisation, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
 
 
@@ -75,14 +83,7 @@ class Observation(models.Model):
     target = models.ForeignKey(to=Target, on_delete=models.PROTECT)
     instrument = models.ForeignKey(to=Instrument, on_delete=models.PROTECT)
     facility = models.ForeignKey(to=Facility, on_delete=models.PROTECT)
-    created = models.DateTimeField(auto_now_add=True)
-
-
-class DataId(models.Model):
-    title = models.CharField(max_length=32, null=False)
-    publisher = models.CharField(max_length=128, null=False)
-    publisher_did = models.CharField(max_length=128, null=False)
-    organisation = models.ForeignKey(to=Organisation, on_delete=models.PROTECT)
+    dataid = models.ForeignKey(to=DataId, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
 
 
@@ -97,7 +98,6 @@ class Photometry(models.Model):
 
 class Spectroscopy(models.Model):
     observation = models.ForeignKey(to=Observation, on_delete=models.PROTECT)
-    target = models.ForeignKey(to=Target, on_delete=models.PROTECT)
     media = models.CharField(max_length=256, null=False)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
