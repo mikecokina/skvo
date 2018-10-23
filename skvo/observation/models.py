@@ -1,4 +1,5 @@
 from django.db import models
+from uuid import uuid4
 
 # Create your models here.
 
@@ -69,11 +70,11 @@ class AccessRights(models.Model):
 
 
 class Observation(models.Model):
-    observation_uuid = models.UUIDField(null=False, unique=True)
-    access_id = models.ForeignKey(to=AccessRights, on_delete=models.PROTECT)
-    target_id = models.ForeignKey(to=Target, on_delete=models.PROTECT)
-    instrument_id = models.ForeignKey(to=Instrument, on_delete=models.PROTECT)
-    facility_id = models.ForeignKey(to=Facility, on_delete=models.PROTECT)
+    observation_uuid = models.UUIDField(null=False, unique=True, default=uuid4, editable=False)
+    access = models.ForeignKey(to=AccessRights, on_delete=models.PROTECT)
+    target = models.ForeignKey(to=Target, on_delete=models.PROTECT)
+    instrument = models.ForeignKey(to=Instrument, on_delete=models.PROTECT)
+    facility = models.ForeignKey(to=Facility, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
 
 
@@ -81,13 +82,13 @@ class DataId(models.Model):
     title = models.CharField(max_length=32, null=False)
     publisher = models.CharField(max_length=128, null=False)
     publisher_did = models.CharField(max_length=128, null=False)
-    organisation_id = models.ForeignKey(to=Organisation, on_delete=models.PROTECT)
+    organisation = models.ForeignKey(to=Organisation, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
 
 
 class Photometry(models.Model):
-    observatiod_id = models.ForeignKey(to=Observation, on_delete=models.PROTECT)
-    bandpass_id = models.ForeignKey(to=Bandpass, on_delete=models.PROTECT)
+    observation = models.ForeignKey(to=Observation, on_delete=models.PROTECT)
+    bandpass = models.ForeignKey(to=Bandpass, on_delete=models.PROTECT)
     media = models.CharField(max_length=256, null=False)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
@@ -95,8 +96,8 @@ class Photometry(models.Model):
 
 
 class Spectroscopy(models.Model):
-    observation_id = models.ForeignKey(to=Observation, on_delete=models.PROTECT)
-    target_id = models.ForeignKey(to=Target, on_delete=models.PROTECT)
+    observation = models.ForeignKey(to=Observation, on_delete=models.PROTECT)
+    target = models.ForeignKey(to=Target, on_delete=models.PROTECT)
     media = models.CharField(max_length=256, null=False)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()

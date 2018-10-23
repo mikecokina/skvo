@@ -110,6 +110,9 @@ DATABASES = {
         'PORT': config.get('database', 'port'),
         'PASSWORD': config.get('database', 'password'),
         'DEFAULT_CHARSET': config.get('database', 'default_character_set'),
+        'OPTIONS': {
+            'init_command': 'SET default_storage_engine=INNODB',
+        },
     }
 }
 
