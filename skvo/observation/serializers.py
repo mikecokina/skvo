@@ -1,5 +1,6 @@
 from copy import copy
 
+from django.db import transaction
 from rest_framework import serializers, validators
 
 from observation import models
@@ -11,7 +12,9 @@ json serializer:
    "photometry": [
        {
            "observation": {
-               "access": "on_demand",
+               "access": {
+                    "access": "on_demand"
+               },
                "target": {
                    "target": "beta_Lyr",
                    "catalogue": "catalogue_name",
@@ -102,7 +105,7 @@ class OrganisationSerializer(CustomModelSerializer):
 class AccessRightsSerializer(CustomModelSerializer):
     class Meta:
         model = models.AccessRights
-        exclude = ('created', )
+        exclude = ('created',)
 
 
 class DataIdSerializer(CustomModelSerializer):
@@ -114,7 +117,7 @@ class DataIdSerializer(CustomModelSerializer):
 
 
 class ObservationSerializer(CustomModelSerializer):
-    access = serializers.CharField()
+    access = AccessRightsSerializer()
     target = TargetSerializer()
     instrument = InstrumentSerializer()
     facility = FacilitySerializer()
@@ -146,8 +149,26 @@ class PhotometryCreateSerializer(CustomModelSerializer):
         pass
 
     def create(self, validated_data):
-        pass
-        # todo: add creation logic (copy from view commented code
+        with transaction.atomic():
+            target, _ = models.Target.objects.get_or_create(validated_data["observation"].pop("target"))
+            bandpass, _ = models.Bandpass.objects.get_or_create(validated_data.pop("bandpass"))
+            instrument, _ = models.Instrument.objects.get_or_create(validated_data["observation"].pop("instrument"))
+            facility, _ = models.Facility.objects.get_or_create(validated_data["observation"].pop("facility"))
+            organisation, _ = models.Organisation.objects.get_or_create(
+                validated_data["observation"]["dataid"].pop("organisation")
+            )
+            access_rights, _ = models.AccessRights.objects.get_or_create(validated_data["observation"].pop("access"))
+            dataid, _ = models.DataId.objects.get_or_create(
+                dict(**validated_data["observation"].pop("dataid"), organisation=organisation)
+            )
+            observation, _ = models.Observation.objects.get_or_create(
+                access=access_rights, target=target, instrument=instrument, facility=facility, dataid=dataid
+            )
+            validated_data.pop("observation")
+            photometry, _ = models.Photometry.objects.get_or_create(
+                dict(**validated_data, observation=observation, bandpass=bandpass)
+            )
+            return photometry
 
 
 class PhotometryCreateManySerializer(serializers.Serializer):
@@ -158,4 +179,8 @@ class PhotometryCreateManySerializer(serializers.Serializer):
 
     def create(self, validated_data):
         validated_data = validated_data.pop('photometry')
-        # todo: add creation logic (copy from view commented code   )
+        return {
+            "photometry":
+                [PhotometryCreateSerializer(_validated_data).create(_validated_data)
+                 for _validated_data in validated_data]
+        }
