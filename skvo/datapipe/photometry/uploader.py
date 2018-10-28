@@ -43,25 +43,26 @@ def run():
 
             metadata = read.read_csv_file(os.path.join(full_dtables_path, metatable_name))
             data = read.read_csv_file(os.path.join(full_dtables_path, dtable_name))
+            all_df = transform.join_photometry_data(data, metadata)
 
-            df = transform.join_photometry_data(data, metadata)
-            tsdb_metrics = transform.photometry_data_df_to_tsdb_metrics(df, source)
             metadata_json = transform.photometry_data_to_metadata_json(metadata, data, source)
+
+            print(metadata_json)
+
+            # tsdb_metrics = transform.photometry_timeseries_data_df_to_tsdb_metrics(df, source)
+
             # metadata_importer.imp(metadata_json)
             # tsdb_importer.imp(tsdb_metrics)
 
-            media_files = fs.get_media_list_on_path(full_media_path)
-            for mf in media_files:
-                full_media_file_path = os.path.join(full_media_path, mf)
-                media_file_content = fs.read_file_as_binary(full_media_file_path)
-                import_content_json = \
-                    transform.photometry_media_to_import_json(media_file_content, mf, metadata, data, source)
-                media_importer.imp(import_content_json)
+            # media_files = fs.get_media_list_on_path(full_media_path)
+            # for mf in media_files:
+            #     full_media_file_path = os.path.join(full_media_path, mf)
+            #     media_file_content = fs.read_file_as_binary(full_media_file_path)
+            #     import_content_json = \
+            #         transform.photometry_media_to_import_json(media_file_content, mf, metadata, data, source)
+            #     media_importer.imp(import_content_json)
+            #
 
-
-
-
-    # importer = None
     # photometry_loader = transform.get_photometry_loader(transform=None, init_sink=None)
 
 

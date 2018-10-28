@@ -70,6 +70,7 @@ class AccessRights(models.Model):
 
 
 class DataId(models.Model):
+    source = models.CharField(max_length=32, null=False)
     title = models.CharField(max_length=32, null=False)
     publisher = models.CharField(max_length=128, null=False)
     publisher_did = models.CharField(max_length=128, null=False)

@@ -22,7 +22,7 @@ json serializer:
                    "description": "desc",
                    "right_ascension": 0.1,
                    "declination": 0.2,
-                   "raget_class": "binary"
+                   "target_class": "binary"
                },
                "instrument": {
                    "instrument": "instrument_name",
@@ -39,6 +39,7 @@ json serializer:
                    "description": "fac desc"
                },
                "dataid": {
+                   "source": "upjs",
                    "title": "data id title",
                    "publisher": "data_id_publisher",
                    "publisher_did": "http://data_id_publisher",

@@ -35,6 +35,9 @@ config = ConfigParser(defaults={
 logger.info("Parse config file: {}".format(venv_config))
 config.read(venv_config)
 
+SKVO_BASE_PATH = config.get("general", "base_path")
+SKVO_EXPORT_PATH = config.get("general", "export_path")
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
