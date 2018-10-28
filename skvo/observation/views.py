@@ -1,4 +1,6 @@
 from observation import serializers
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 import logging
 # Create your views here.
@@ -17,28 +19,9 @@ class PhotometryList(generics.ListCreateAPIView):
         return serializer_class
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+class PhotometryMedia(APIView):
+    def get(self, request, *args, **kwargs):
+        return Response(dict())
 
 
 

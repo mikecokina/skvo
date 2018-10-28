@@ -1,0 +1,249 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>SKVO docs &#8212; skvo 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="#">skvo 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="skvo-docs">
+<h1>SKVO docs<a class="headerlink" href="#skvo-docs" title="Permalink to this headline">¶</a></h1>
+<p>SKVO is a portal gathering processed photometry observation obrained by couple of different facilities and instruments. The main idea is to make those data accessible to others.</p>
+<div class="section" id="behind-the-scene">
+<h2>Behind the scene<a class="headerlink" href="#behind-the-scene" title="Permalink to this headline">¶</a></h2>
+<p>Behind the scene of SKVO is hidden several different technologies that make it works.
+SKVO consist of the following main parts:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ubuntu</span> <span class="mf">16.04</span> <span class="n">server</span>
+<span class="n">Python</span> <span class="n">DJango</span> <span class="n">server</span>
+<span class="n">Apache</span><span class="o">/</span><span class="n">NGINX</span> <span class="n">server</span>
+<span class="n">MySQL</span> <span class="n">database</span>
+<span class="n">HBase</span> <span class="n">databsae</span>
+<span class="n">OpenTSDB</span> <span class="n">database</span>
+</pre></div>
+</div>
+<p>Observation data are stored in couple of different locations, depends on data types.</p>
+</div>
+<div class="section" id="photometry">
+<h2>Photometry<a class="headerlink" href="#photometry" title="Permalink to this headline">¶</a></h2>
+<p>Data comming from photometric observations consist of three different types and has to be stored in three different locations linked to each other. Observation data consist from the following types:</p>
+<blockquote>
+<div><ul class="simple">
+<li>images: processed raw images, converted to one of the following types, and so <code class="docutils literal notranslate"><span class="pre">png</span></code> or <code class="docutils literal notranslate"><span class="pre">jpeg/jpg</span></code></li>
+<li>metadata: information about observation and sources data comming from</li>
+<li>observation data: processed time series data that represents each point of observation</li>
+</ul>
+</div></blockquote>
+<div class="section" id="images-media">
+<h3>Images (media)<a class="headerlink" href="#images-media" title="Permalink to this headline">¶</a></h3>
+<p>blah</p>
+</div>
+<div class="section" id="metadata">
+<h3>Metadata<a class="headerlink" href="#metadata" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>example of metadata content is shown bellow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;observation&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="s2">&quot;access&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                <span class="s2">&quot;access&quot;</span><span class="p">:</span> <span class="s2">&quot;on_demand&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;beta_Lyr&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;catalogue&quot;</span><span class="p">:</span> <span class="s2">&quot;catalogue_name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;catalogue_value&quot;</span><span class="p">:</span> <span class="s2">&quot;catalogue_value&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;desc&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;right_ascension&quot;</span><span class="p">:</span> <span class="s2">&quot;0.1000000000&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;declination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.2000000000&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target_class&quot;</span><span class="p">:</span> <span class="n">null</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;instrument&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                <span class="s2">&quot;instrument&quot;</span><span class="p">:</span> <span class="s2">&quot;instrument_name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;instrument_uid&quot;</span><span class="p">:</span> <span class="s2">&quot;uid_for_instrument&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;telescope&quot;</span><span class="p">:</span> <span class="s2">&quot;telescope&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;camera&quot;</span><span class="p">:</span> <span class="s2">&quot;camera&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;spectroscope&quot;</span><span class="p">:</span> <span class="s2">&quot;spectac&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;field_of_view&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0000000000&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;int desc&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;facility&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                <span class="s2">&quot;facility&quot;</span><span class="p">:</span> <span class="s2">&quot;facility_name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;facility_uid&quot;</span><span class="p">:</span> <span class="s2">&quot;facility_uid&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;fac desc&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;dataid&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                <span class="s2">&quot;organisation&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                    <span class="s2">&quot;organisation&quot;</span><span class="p">:</span> <span class="s2">&quot;organisation_name_like&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;organisation_did&quot;</span><span class="p">:</span> <span class="s2">&quot;http://organ&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;email@google.com&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;data id title&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;publisher&quot;</span><span class="p">:</span> <span class="s2">&quot;data_id_publisher&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;publisher_did&quot;</span><span class="p">:</span> <span class="s2">&quot;http://data_id_publisher&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;observation_uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;937cbc6f-3456-4fe4-b845-9c6f463f61bb&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;bandpass&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+            <span class="s2">&quot;bandpass&quot;</span><span class="p">:</span> <span class="s2">&quot;bandpass_name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;bandpass_uid&quot;</span><span class="p">:</span> <span class="s2">&quot;uid_for_band&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;spectral_band_type&quot;</span><span class="p">:</span> <span class="s2">&quot;optical&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;photometric_system&quot;</span><span class="p">:</span> <span class="s2">&quot;johnson&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;media&quot;</span><span class="p">:</span> <span class="s2">&quot;/etc/sys/data&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-05-01T00:00:00Z&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-05-04T00:00:00Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Those data are stored in MySQL database in several differend tables linked to each other by <code class="docutils literal notranslate"><span class="pre">foreign</span> <span class="pre">keys</span></code>.
+Each of the table is deffined by the following python classes as object realted object (ORM):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="n">ORM</span> <span class="n">will</span> <span class="n">come</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="observation-time-series-data">
+<h3>Observation (time series) data:<a class="headerlink" href="#observation-time-series-data" title="Permalink to this headline">¶</a></h3>
+<p>blah</p>
+</div>
+<div class="section" id="upload-data-flow">
+<h3>Upload data flow<a class="headerlink" href="#upload-data-flow" title="Permalink to this headline">¶</a></h3>
+<p>Expected data struncture on the local storage is like following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data
+    `- source
+             `- dtype
+                     `- imgs
+                     |      `- yyyymm
+                     |               `- objectuid_yyyymmdd [datetime when observation starts]
+                     |                                    `- bandpass_uid
+                     |                                                  `- objectuid_yyyymmdd_id.jpeg/png/whatever
+                     `- dtables
+                               `- yyyymm
+                                        `- objectuid_yyyymmdd [datetime when observation starts]
+                                                              `- bandpass_uid
+                                                                            `- objectuid_yyyymmdd_data_id.csv [observation data]
+                                                                            `- objectuid_yyyymmdd_meta_id.csv [metaddata]
+</pre></div>
+</div>
+<p>Uploader script rely on mentioned data structure.</p>
+<p><code class="docutils literal notranslate"><span class="pre">data</span></code> path on the top of sctruct tree is defined in <code class="docutils literal notranslate"><span class="pre">skvo.ini</span></code> configuration file as <code class="docutils literal notranslate"><span class="pre">base_path</span></code>.</p>
+<p>Concrete structure should looks like following one:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data
+    `- upjs
+            `- photometry
+                        `- imgs
+                        |      `- 201802
+                        |               `- bet_Lyr_20180217
+                        |                                  `- Jonson.U
+                        |                                             `- bet_Lyr_20180217_0.png
+                        |                                             `- bet_Lyr_20180217_1.png
+                        |                                             `- bet_Lyr_20180217_2.png
+                        `- dtables
+                                   `- 201802
+                                            `- bet_Lyr_20180217
+                                                               `- Jonson.U
+                                                                          `- bet_Lyr_20180217_0_data_id.csv
+                                                                          `- bet_Lyr_20180217_meta_id.csv
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="internal">
+<h2>Internal<a class="headerlink" href="#internal" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">SKVO docs</a><ul>
+<li><a class="reference internal" href="#behind-the-scene">Behind the scene</a></li>
+<li><a class="reference internal" href="#photometry">Photometry</a><ul>
+<li><a class="reference internal" href="#images-media">Images (media)</a></li>
+<li><a class="reference internal" href="#metadata">Metadata</a></li>
+<li><a class="reference internal" href="#observation-time-series-data">Observation (time series) data:</a></li>
+<li><a class="reference internal" href="#upload-data-flow">Upload data flow</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#internal">Internal</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="#">skvo 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, UPJS.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

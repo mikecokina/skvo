@@ -145,8 +145,8 @@ def fill_basic_photometry_metatable_df(path):
     df["target.declination"] = target_de
     df["target.target_class"] = "variable"
 
-    df["bandpass.bandpass"] = band
-    df["bandpass.bandpass_uid"] = "uid.{}".format(band)
+    df["bandpass.bandpass"] = "band.{}".format(band)
+    df["bandpass.bandpass_uid"] = band
     df["bandpass.spectral_band_type"] = "optical"
     df["bandpass.photometric_system"] = "sys"
 

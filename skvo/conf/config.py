@@ -18,10 +18,9 @@ CONFIG_FILE = venv_config
 LOG_CONFIG = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'conf', 'skvo-log.json')
 
 BASE_PATH = os.path.expanduser("~/data")
+EXPORT_PATH = os.path.expanduser("~/export_data")
 
-OPENTSDB_HOST = "localhost"
-OPENTSDB_PORT = 4242
-OPENTSDB_PROTOCOL = "http"
+OPENTSDB_SERVER = "localhost:4242"
 OPENTSDB_BATCH_SIZE = 10000
 
 
@@ -54,18 +53,15 @@ def update():
         global OPENTSDB_BATCH_SIZE
         OPENTSDB_BATCH_SIZE = parser.getint("btch_size", OPENTSDB_BATCH_SIZE)
 
-        global OPENTSDB_HOST
-        OPENTSDB_HOST = parser.getint("host", OPENTSDB_HOST)
-
-        global OPENTSDB_PORT
-        OPENTSDB_PORT = parser.getint("port", OPENTSDB_PORT)
-
-        global OPENTSDB_PROTOCOL
-        OPENTSDB_PROTOCOL = parser.getint("protocol", OPENTSDB_PROTOCOL)
+        global OPENTSDB_SERVER
+        OPENTSDB_SERVER = parser.getint("host", OPENTSDB_SERVER)
 
     if parser.has_section("general"):
         global BASE_PATH
         BASE_PATH = parser.get("base_path", BASE_PATH)
+
+        global EXPORT_PATH
+        EXPORT_PATH = parser.get("export_path", EXPORT_PATH)
 
 
 DTYPES_BASE_DIR = {

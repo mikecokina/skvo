@@ -115,11 +115,3 @@ def parse_timestamp(df):
                 dt_series = pd.to_datetime(dt_series, errors='coerce')
             timestamp.loc[timestamp.isnull()] = dt_series.loc[timestamp.isnull()]
     return timestamp
-
-
-# def pandas_ts_cols_to_unix_ts_cols(df, unit='ns'):
-#     df = df.copy()
-#     for c in conf.TIME_FIELDS:
-#         if c in df:
-#             df[c] = time_utils.pandas_timestamp_to_unix(df[c], unit=unit)
-#     return df

@@ -7,7 +7,7 @@ from conf import config
 from datapipe.photometry import filesystem as fs
 from datapipe.photometry import read
 from datapipe.photometry import transform
-from datapipe.importers import MetadataHttpImporter
+from datapipe.importers import MetadataHttpImporter, OpenTsdbHttpImporter, MediaHttpImporter
 
 
 class PhotometryProcessor(object):
@@ -23,7 +23,9 @@ def run():
     sources = fs.get_sources(config.BASE_PATH)
     data_locations = fs.get_data_locations(config.BASE_PATH, sources)
 
-    metadata_importer = MetadataHttpImporter(host="localhost", port=8082, protocol="http")
+    metadata_importer = MetadataHttpImporter(server="localhost:8082")
+    tsdb_importer = OpenTsdbHttpImporter(server=config.OPENTSDB_SERVER, batch_size=config.OPENTSDB_BATCH_SIZE)
+    media_importer = MediaHttpImporter(server="localhost:8082")
 
     for source, dtables_paths in data_locations.items():
         for dtables_path in dtables_paths:
@@ -33,6 +35,7 @@ def run():
             start_date = fs.parse_date_from_path(dtables_path)
             dtable_name = fs.get_dtable_name_from_path(full_dtables_path)
             metatable_name = fs.get_metatable_name_from_path(full_dtables_path)
+            full_media_path = fs.get_corresponding_media_path(full_dtables_path)
 
             logger.debug("reading metadata and data for object: {}, datetime: {}, bandpass: {}, source: {}"
                          "".format(target_fs_uid, datetime.date.strftime(start_date, "%Y-%m-%d"),
@@ -44,7 +47,19 @@ def run():
             df = transform.join_photometry_data(data, metadata)
             tsdb_metrics = transform.photometry_data_df_to_tsdb_metrics(df, source)
             metadata_json = transform.photometry_data_to_metadata_json(metadata, data, source)
-            metadata_importer.imp(metadata_json)
+            # metadata_importer.imp(metadata_json)
+            # tsdb_importer.imp(tsdb_metrics)
+
+            media_files = fs.get_media_list_on_path(full_media_path)
+            for mf in media_files:
+                full_media_file_path = os.path.join(full_media_path, mf)
+                media_file_content = fs.read_file_as_binary(full_media_file_path)
+                import_content_json = \
+                    transform.photometry_media_to_import_json(media_file_content, mf, metadata, data, source)
+                media_importer.imp(import_content_json)
+
+
+
 
     # importer = None
     # photometry_loader = transform.get_photometry_loader(transform=None, init_sink=None)
@@ -56,9 +71,7 @@ def main():
     parser.add_argument('--config', nargs='?', help='path to configuration file')
     parser.add_argument('--log', nargs='?', help='path to json logging configuration file')
 
-    parser.add_argument('--tsdb-host', nargs='?', help='TSD host name.')
-    parser.add_argument('--tsdb-port', nargs='?', help='TSD port number.')
-    parser.add_argument('--tsdb-protocol', nargs='?', help='TSD protocol.')
+    parser.add_argument('--tsdb-server', nargs='?', help='TSD host name.')
     parser.add_argument('--tsdb-batch-size', nargs='?', type=int, help='maximum batch size for OpenTSDB http input')
 
     parser.add_argument('--base-path', nargs='?', type=str, help='base path to data storage')
@@ -71,9 +84,7 @@ def main():
     config.CONFIG_FILE = args.config or config.CONFIG_FILE
     config.LOG_CONFIG = args.log or config.LOG_CONFIG
 
-    config.OPENTSDB_HOST = args.tsdb_host or config.OPENTSDB_HOST
-    config.OPENTSDB_PORT = args.tsdb_port or config.OPENTSDB_PORT
-    config.OPENTSDB_PROTOCOL = args.tsdb_protocol or config.OPENTSDB_PROTOCOL
+    config.OPENTSDB_SERVER = args.tsdb_server or config.OPENTSDB_SERVER
     config.OPENTSDB_BATCH_SIZE = args.tsdb_batch_size or config.OPENTSDB_BATCH_SIZE
 
     config.BASE_PATH = args.base_path or config.BASE_PATH

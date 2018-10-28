@@ -101,5 +101,16 @@ def normalize_path(path):
     return os.sep.join(split_path)
 
 
-def get_media_list_on_path(path, condition):
-    pass
+def get_media_list_on_path(path):
+    return [f for f in os.listdir(path) if is_image(f)]
+
+
+def read_file_as_binary(path):
+    with open(path, "rb") as rbf:
+        content = rbf.read()
+        return content
+
+
+def is_image(path):
+    filename, file_extension = os.path.splitext(path)
+    return True if str(file_extension).lower()[1:] in ["png", "jpg", "jpeg"] else False

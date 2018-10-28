@@ -90,10 +90,20 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
     df["ts.unix"] = timestamp
 
     metadata = dict(
-        **metadata_df.iloc[0].to_dict(),
+        # todo: prepare json like in serializers header
         start_date=df["ts.timestamp"][df.first_valid_index()],
         end_date=df["ts.timestamp"][df.last_valid_index()],
-        source=source
     )
 
     return metadata
+
+
+def photometry_media_to_import_json(media_content, filename, data, metadata, source):
+    import_json = {
+        "content": media_content,
+        "filename": filename,
+        "source": source,
+        "bandpass": None
+    }
+
+    return import_json
