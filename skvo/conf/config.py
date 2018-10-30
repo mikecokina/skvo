@@ -20,7 +20,7 @@ LOG_CONFIG = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'conf', 's
 BASE_PATH = os.path.expanduser("~/data")
 EXPORT_PATH = os.path.expanduser("~/export_data")
 
-OPENTSDB_SERVER = "localhost:4242"
+OPENTSDB_SERVER = "http://localhost:4242"
 OPENTSDB_BATCH_SIZE = 10000
 
 
@@ -74,3 +74,6 @@ SCHAR_REVERSE = r'(\-){1}([a-z0-9]){2}'
 
 
 TIMESTAMP_PARSING_COLUMNS = ["ts.timestamp"]
+
+PHOTOMETRY_FLOAT_FIELDS = ["ts.magnitude", "target.right_ascension", "target.declination", "instrument.field_of_view"]
+PHOTOMETRY_INT_FIELDS = ["ts.flux_calibration_level", "ts.exposure"]

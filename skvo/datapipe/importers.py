@@ -4,6 +4,9 @@ import json
 
 from abc import ABCMeta, abstractmethod
 
+import time
+from pyopentsdb import tsdb
+
 # def imp(validated_data):
 #     # todo: add importer logic here
 #     return True
@@ -22,6 +25,7 @@ class OpenTsdbHttpImporter(AbstractHttpImporter):
         self._server = server
         self._batch_size = batch_size
         self._session = requests.Session()
+        self._tsdb_connector = tsdb.tsdb_connection(host=self._server)
 
     @property
     def server(self):
@@ -31,14 +35,30 @@ class OpenTsdbHttpImporter(AbstractHttpImporter):
     def tsdb_api(self):
         return "{}".format(self._server)
 
-    def batch_split(self):
-        pass
+    def batch_split(self, metrics):
+        for i in range(0, len(metrics), self._batch_size):
+            yield metrics[i:i + self._batch_size]
 
-    def http_send(self):
-        pass
+    def http_send(self, batch):
+        start_time = time.time()
+        print(batch)
+        end_time = time.time() + 0.000001
+        speed = len(batch) / (end_time - start_time)
+        self._logger.info("Imported {} metrics, speed {} metrics/s".format(len(batch), speed))
+        return
+
+        try:
+            self._tsdb_connector.put(data=batch)
+        except Exception as e:
+            self._logger.error("Cannot send data to OpenTSDB due to: {}".format(str(e)))
+            raise
 
     def imp(self, metrics):
-        pass
+        if isinstance(metrics, dict):
+            metrics = [metrics]
+        metrics = self.batch_split(metrics)
+        for metric_batch in metrics:
+            self.http_send(metric_batch)
 
 
 class MetadataHttpImporter(AbstractHttpImporter):
@@ -57,7 +77,7 @@ class MetadataHttpImporter(AbstractHttpImporter):
 
     @property
     def api_endpoint(self):
-        return "{}://{}:{}/api/metadata".format(self._protocol, self._host, self._port)
+        return "{}/api/photometry/metadata".format(self._server)
 
     def imp(self, json_data):
         headers = {

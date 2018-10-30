@@ -1,18 +1,66 @@
 import argparse
+import datetime
 import logging
 import os
-import datetime
+from queue import Queue
+from threading import Thread
 
 from conf import config
+from datapipe.importers import MetadataHttpImporter, OpenTsdbHttpImporter, MediaHttpImporter
 from datapipe.photometry import filesystem as fs
 from datapipe.photometry import read
 from datapipe.photometry import transform
-from datapipe.importers import MetadataHttpImporter, OpenTsdbHttpImporter, MediaHttpImporter
 
 
 class PhotometryProcessor(object):
     def __init__(self):
         pass
+
+
+def async_import(lambda_fns):
+    __WORKER_RUN__ = True
+
+    def async_importer_worker():
+        while __WORKER_RUN__:
+            lamda_fn = lamda_fns_queue.get()
+            if lamda_fn == "TERMINATOR":
+                break
+            if not error_queue.empty():
+                break
+            try:
+                lamda_fn()
+            except Exception as we:
+                error_queue.put(we)
+                break
+            lamda_fn()
+
+    n_threads = 4
+    lamda_fns_queue = Queue()
+    error_queue = Queue()
+    threads = list()
+
+    try:
+        for lambda_fn in lambda_fns:
+            lamda_fns_queue.put(lambda_fn)
+
+        for _ in range(n_threads):
+            lamda_fns_queue.put("TERMINATOR")
+
+        for _ in range(n_threads):
+            t = Thread(target=async_importer_worker())
+            threads.append(t)
+            t.daemon = True
+            t.start()
+
+        for t in threads:
+            t.join()
+    except KeyboardInterrupt:
+        raise
+    finally:
+        __WORKER_RUN__ = False
+
+    if not error_queue.empty():
+        raise error_queue.get()
 
 
 def run():
@@ -23,9 +71,9 @@ def run():
     sources = fs.get_sources(config.BASE_PATH)
     data_locations = fs.get_data_locations(config.BASE_PATH, sources)
 
-    metadata_importer = MetadataHttpImporter(server="localhost:8082")
+    metadata_importer = MetadataHttpImporter(server="http://localhost:8082")
     tsdb_importer = OpenTsdbHttpImporter(server=config.OPENTSDB_SERVER, batch_size=config.OPENTSDB_BATCH_SIZE)
-    media_importer = MediaHttpImporter(server="localhost:8082")
+    media_importer = MediaHttpImporter(server="http://localhost:8082")
 
     for source, dtables_paths in data_locations.items():
         for dtables_path in dtables_paths:
@@ -42,17 +90,45 @@ def run():
                                    bandpass_fs_uid, source))
 
             metadata = read.read_csv_file(os.path.join(full_dtables_path, metatable_name))
+            metadata = transform.convert_df_float_values(metadata)
+            metadata = transform.convert_df_int_values(metadata)
+
             data = read.read_csv_file(os.path.join(full_dtables_path, dtable_name))
-            all_df = transform.join_photometry_data(data, metadata)
+            data = transform.convert_df_float_values(data)
+            data = transform.convert_df_int_values(data)
+
+            joined_df = transform.join_photometry_data(data, metadata)
 
             metadata_json = transform.photometry_data_to_metadata_json(metadata, data, source)
+            # metadata_import_response = metadata_importer.imp(metadata_json)
+            # observation_uuid = transform.get_response_observation_uuid(metadata_import_response)
+            # observation_id = transform.get_response_observation_id(metadata_import_response)
 
-            print(metadata_json)
+            observation_id = 5
+            tsdb_observation_id_metrics = transform.observation_id_data_df_to_tsdb_metrics(joined_df, source,
+                                                                                           observation_id)
+            tsdb_timeseries_metrics = transform.df_to_timeseries_tsdb_metrics(joined_df, source)
+            tsdb_exposure_metrics = transform.df_to_exposure_tsdb_metrics(joined_df, source)
+            tsdb_errors_metrics = transform.df_to_errors_tsdb_metrics(joined_df, source)
 
-            # tsdb_metrics = transform.photometry_timeseries_data_df_to_tsdb_metrics(df, source)
+            lambdas = [
+                lambda: tsdb_importer.imp(tsdb_observation_id_metrics),
+                lambda : tsdb_importer.imp(tsdb_timeseries_metrics),
+                lambda: tsdb_importer.imp(tsdb_errors_metrics),
+                lambda : tsdb_importer.imp(tsdb_exposure_metrics)
+            ]
+            async_import(lambdas)
 
-            # metadata_importer.imp(metadata_json)
-            # tsdb_importer.imp(tsdb_metrics)
+
+
+
+
+
+
+
+
+
+
 
             # media_files = fs.get_media_list_on_path(full_media_path)
             # for mf in media_files:
@@ -63,7 +139,7 @@ def run():
             #     media_importer.imp(import_content_json)
             #
 
-    # photometry_loader = transform.get_photometry_loader(transform=None, init_sink=None)
+            # photometry_loader = transform.get_photometry_loader(transform=None, init_sink=None)
 
 
 def main():
@@ -92,6 +168,7 @@ def main():
     config.set_up_logging()
 
     run()
+
 
 if __name__ == '__main__':
     main()

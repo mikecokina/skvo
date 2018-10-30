@@ -1,7 +1,14 @@
+import datetime
+import json
+
+import os
+import requests
+
+from conf import config
 from datapipe.photometry import config as photometry_config
+from skvo import settings
 from utils import time_utils
 from utils.special_characters import special_characters_encode
-from skvo import settings
 
 
 def prepare_message():
@@ -27,68 +34,119 @@ def join_photometry_data(data, metadata):
     return df
 
 
-def get_tsdb_metric_name(target_catalogue_value, bandpass_uid):
+def preprocess_photometry_joined_df(joined_df):
+    joined_df.reset_index(inplace=True, drop=True)
+    df_timestamp = time_utils.parse_timestamp(joined_df)
+    timestamp = time_utils.pd_timestamp_to_unix(df_timestamp, unit='ms')
+    return joined_df, timestamp
+
+
+def preprocess_tsdb_metric_keys(target_catalogue_value, bandpass_uid):
     suffix = photometry_config.TSDB_METRIC_SUFFIX
     target_uid = special_characters_encode(target_catalogue_value)
     bandpass_uid = special_characters_encode(bandpass_uid)
+    return target_uid, bandpass_uid, suffix
+
+
+def get_observation_tsdb_metric_name(target_catalogue_value, bandpass_uid):
+    target_uid, bandpass_uid, suffix = preprocess_tsdb_metric_keys(target_catalogue_value, bandpass_uid)
     return '{}.{}.{}'.format(target_uid, bandpass_uid, suffix)
 
 
-def photometry_timeseries_data_df_to_tsdb_metrics(df, source):
-    df.reset_index(inplace=True, drop=True)
-    df_timestamp = time_utils.parse_timestamp(df)
-    timestamp = time_utils.pd_timestamp_to_unix(df_timestamp, unit='ms')
+def get_observation_id_tsdb_metric_name(target_catalogue_value, bandpass_uid):
+    target_uid, bandpass_uid, suffix = preprocess_tsdb_metric_keys(target_catalogue_value, bandpass_uid)
+    return '{}.{}.{}.{}'.format(target_uid, bandpass_uid, "observation_id", suffix)
 
-    metrics = [
+
+def get_exposure_tsdb_metric_name(target_catalogue_value, bandpass_uid):
+    target_uid, bandpass_uid, suffix = preprocess_tsdb_metric_keys(target_catalogue_value, bandpass_uid)
+    return '{}.{}.{}.{}'.format(target_uid, bandpass_uid, "exposure", suffix)
+
+
+def get_error_tsdb_metric_name(target_catalogue_value, bandpass_uid):
+    target_uid, bandpass_uid, suffix = preprocess_tsdb_metric_keys(target_catalogue_value, bandpass_uid)
+    return '{}.{}.{}.{}'.format(target_uid, bandpass_uid, "error", suffix)
+
+
+def df_to_timeseries_tsdb_metrics(df, source):
+    df, timestamp = preprocess_photometry_joined_df(df)
+
+    return [
         {
-            'metric': get_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
-                                           df["bandpass.bandpass_uid"].iloc[i]),
-            'timestamp': timestamp.iloc[i],
-            'value': df["ts.magnitude"].iloc[i],
+            'metric': get_observation_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
+                                                       df["bandpass.bandpass_uid"].iloc[i]),
+            'timestamp': int(timestamp.iloc[i]),
+            'value': float(df["ts.magnitude"].iloc[i]),
             'tags':
                 {
-                    'instrument': source,
-                    'target': df["target.target"].iloc[0],
-                    'source': source
+                    'instrument': str(df["instrument.instrument"].iloc[0]),
+                    'target': str(df["target.target"].iloc[0]),
+                    'source': str(source),
+                    'flux_calibration_level': int(df["ts.flux_calibration_level"].iloc[i]),
+                    'flux_calibration': str(df["ts.flux_calibration"].iloc[i]),
+                    'timeframe_reference_possition': str(df["ts.timeframe_reference_position"].iloc[i])
                 }
         }
         for i in range(timestamp.shape[0])
     ]
 
-    return metrics
 
-
-def photometry_exposute_data_df_to_tsdb_metrics(df, source):
-    pass
-
-
-def photometry_errors_data_df_to_tsdb_metrics(df, source):
-    pass
-
-
-def photometry_data_df_to_tsdb_meta_metrics(df, source):
-    df.reset_index(inplace=True, drop=True)
-    df_timestamp = time_utils.parse_timestamp(df)
-    timestamp = time_utils.pd_timestamp_to_unix(df_timestamp, unit='ms')
-
-    metrics = [
+def observation_id_data_df_to_tsdb_metrics(df, source, observation_id):
+    df, timestamp = preprocess_photometry_joined_df(df)
+    return [
         {
-            'metric': get_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
-                                           df["bandpass.bandpass_uid"].iloc[i]),
-            'timestamp': timestamp.iloc[i],
-            'value': df["ts.magnitude"].iloc[i],
+            'metric': get_observation_id_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
+                                                          df["bandpass.bandpass_uid"].iloc[i]),
+            'timestamp': int(timestamp.iloc[i]),
+            'value': int(observation_id),
             'tags':
                 {
-                    'instrument': source,
-                    'target': df["target.target"].iloc[0],
-                    'source': source,
-                    'bandpass': df["bandpass.bandpass_uid"].iloc[i]
+                    'instrument': str(df["instrument.instrument"].iloc[0]),
+                    'target': str(df["target.target"].iloc[0]),
+                    'source': str(source)
                 }
         }
         for i in range(timestamp.shape[0])
     ]
 
-    return metrics
+
+def df_to_exposure_tsdb_metrics(df, source):
+    df, timestamp = preprocess_photometry_joined_df(df)
+    return [
+        {
+            'metric': get_exposure_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
+                                                    df["bandpass.bandpass_uid"].iloc[i]),
+            'timestamp': int(timestamp.iloc[i]),
+            'value': int(df["ts.exposure"].iloc[i]),
+            'tags':
+                {
+                    'instrument': str(df["instrument.instrument"].iloc[0]),
+                    'target': str(df["target.target"].iloc[0]),
+                    'source': str(source),
+
+                }
+        }
+        for i in range(timestamp.shape[0])
+    ]
+
+
+def df_to_errors_tsdb_metrics(df, source):
+    df, timestamp = preprocess_photometry_joined_df(df)
+    return [
+        {
+            'metric': get_exposure_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
+                                                    df["bandpass.bandpass_uid"].iloc[i]),
+            'timestamp': int(timestamp.iloc[i]),
+            'value': float(df["ts.magnitude_error"].iloc[i]),
+            'tags':
+                {
+                    'instrument': str(df["instrument.instrument"].iloc[0]),
+                    'target': str(df["target.target"].iloc[0]),
+                    'source': str(source)
+                }
+        }
+        for i in range(timestamp.shape[0])
+    ]
 
 
 def photometry_data_to_metadata_json(metadata_df, data_df, source):
@@ -96,6 +154,7 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
     df_timestamp = time_utils.parse_timestamp(df)
     timestamp = time_utils.pd_timestamp_to_unix(df_timestamp, unit='ms')
     df["ts.unix"] = timestamp
+    start_date = datetime.datetime.strptime(df["ts.timestamp"][df.first_valid_index()], "%Y-%m-%d %H:%M:%S")
 
     metadata = \
         {
@@ -148,71 +207,18 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
                         "spectral_band_type": metadata_df["bandpass.spectral_band_type"].iloc[0],
                         "photometric_system": metadata_df["bandpass.photometric_system"].iloc[0]
                     },
-                    "media": settings.SKVO_EXPORT_PATH
+                    "media": os.path.join(
+                        source, config.DTYPES_BASE_DIR["photometry"], "media",
+                        datetime.datetime.strftime(start_date, "%Y%m"),
+                        "{}_{}".format(metadata_df["target.target"].iloc[0],
+                                       datetime.datetime.strftime(start_date, "%Y%m%d")),
+                        metadata_df["bandpass.bandpass_uid"].iloc[0]
+                    )
                 }
             ]
         }
 
     return metadata
-
-
-"""
-json serializer:
-
-{
-   "photometry": [
-       {
-           "observation": {
-               "access": {
-                    "access": "on_demand"
-               },
-               "target": {
-                   "target": "beta_Lyr",
-                   "catalogue": "catalogue_name",
-                   "catalogue_value": "catalogue_value",
-                   "description": "desc",
-                   "right_ascension": 0.1,
-                   "declination": 0.2,
-                   "raget_class": "binary"
-               },
-               "instrument": {
-                   "instrument": "instrument_name",
-                   "instrument_uid": "uid_for_instrument",
-                   "telescope": "telescope",
-                   "camera": "camera",
-                   "spectroscope": "spectac",
-                   "field_of_view": 10,
-                   "description": "int desc"
-               },
-               "facility": {
-                   "facility": "facility_name",
-                   "facility_uid": "facility_uid",
-                   "description": "fac desc"
-               },
-               "dataid": {
-                   "title": "data id title",
-                   "publisher": "data_id_publisher",
-                   "publisher_did": "http://data_id_publisher",
-                   "organisation": {
-                       "organisation": "organisation_name_like",
-                       "organisation_did": "http://organ",
-                       "email": "email@google.com"
-                   }
-               }
-           },
-           "start_date": "2018-05-01T00:00:00",
-           "end_date": "2018-05-04T00:00:00",
-           "bandpass": {
-               "bandpass": "bandpass_name",
-               "bandpass_uid": "uid_for_band",
-               "spectral_band_type": "optical",
-               "photometric_system": "johnson"
-           },
-           "media": "/etc/sys/data"
-       }
-   ]
-}
-"""
 
 
 def photometry_media_to_import_json(media_content, filename, data, metadata, source):
@@ -224,3 +230,31 @@ def photometry_media_to_import_json(media_content, filename, data, metadata, sou
     }
 
     return import_json
+
+
+def convert_df_float_values(df):
+    for column in config.PHOTOMETRY_FLOAT_FIELDS:
+        if column in df:
+            df[column] = df[column].astype(float)
+    return df
+
+
+def convert_df_int_values(df):
+    for column in config.PHOTOMETRY_INT_FIELDS:
+        if column in df:
+            df[column] = df[column].astype(int)
+    return df
+
+
+def get_response_observation_uuid(response: requests.Response):
+    if response.status_code in [200, 201]:
+        content = json.loads(response.content.decode())
+        return content["photometry"][-1]["observation"]["observation_uuid"]
+    raise ValueError("Unexpected response status code")
+
+
+def get_response_observation_id(response: requests.Response):
+    if response.status_code in [200, 201]:
+        content = json.loads(response.content.decode())
+        return content["photometry"][-1]["observation"]["id"]
+    raise ValueError("Unexpected response status code")

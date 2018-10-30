@@ -125,7 +125,7 @@ def fill_basic_photometry_dtable_df(startdate):
     df["ts.flux_calibration"] = "abs"
     df["ts.flux_calibration_level"] = random.randint(1, 5)
     df["ts.exposure"] = random.randint(10, 60)
-    df["ts.time_frame_reference_position"] = "heliocenter"
+    df["ts.timeframe_reference_position"] = "heliocenter"
     return df
 
 
@@ -155,7 +155,7 @@ def fill_basic_photometry_metatable_df(path):
     df["instrument.telescope"] = "instrument.telescope.{}".format(instrument)
     df["instrument.camera"] = "instrument.camera.{}".format(instrument)
     df["instrument.spectroscope"] = "instrument.spect.{}".format(instrument)
-    df["instrument.field_of_view"] = "instrument.fov.{}".format(random.randint(10, 20))
+    df["instrument.field_of_view"] = random.randint(10, 20)
     df["instrument.description"] = "instrument.description"
 
     df["facility.facility"] = "facility.in.{}".format(source)
@@ -220,13 +220,14 @@ def prepare_data():
         p_dtables[key].to_csv(dtable_path, index=False)
         p_metatables[key].to_csv(metatable_path, index=False)
 
-    for path_to_band_dir, media in p_media.items():
-        for png, img in media.items():
-            date = parse_datetime_from_path(path_to_band_dir)
-            date_suffix = "{}{}{}".format(date.year, date.month, date.day)
-
-            path = os.path.join(DEFAULT_BASE_PATH, path_to_band_dir, "{}_{}".format(date_suffix, png))
-            save_image(path, img)
+    # for path_to_band_dir, media in p_media.items():
+    #     for png, img in media.items():
+    #         date = parse_datetime_from_path(path_to_band_dir)
+    #         date_suffix = "{}{}{}".format(date.year, date.month, date.day)
+    #
+    #         path = os.path.join(DEFAULT_BASE_PATH, path_to_band_dir, "{}_{}".format(date_suffix, png))
+    #         save_image(path, img)
+    logger.debug("Done")
 
 
 def generate_random_image():
