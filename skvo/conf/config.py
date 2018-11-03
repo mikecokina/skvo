@@ -13,7 +13,6 @@ venv_config = os.path.join(os.environ.get('VIRTUAL_ENV', ''), 'conf', 'skvo.ini'
 if not os.path.isfile(venv_config):
     raise LookupError("Couldn't resolve configuration file. To define it \n "
                       "  - add conf/skvo.ini under your virtualenv root\n")
-
 CONFIG_FILE = venv_config
 LOG_CONFIG = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'conf', 'skvo-log.json')
 
@@ -22,6 +21,8 @@ EXPORT_PATH = os.path.expanduser("~/export_data")
 
 OPENTSDB_SERVER = "http://localhost:4242"
 OPENTSDB_BATCH_SIZE = 10000
+
+parser.read(CONFIG_FILE)
 
 
 def set_up_logging():
@@ -51,17 +52,17 @@ def read_and_update_config(path=None):
 def update():
     if parser.has_section("opentsdb"):
         global OPENTSDB_BATCH_SIZE
-        OPENTSDB_BATCH_SIZE = parser.getint("btch_size", OPENTSDB_BATCH_SIZE)
+        OPENTSDB_BATCH_SIZE = parser.getint("opentsdb", "batch_size", fallback=OPENTSDB_BATCH_SIZE)
 
         global OPENTSDB_SERVER
-        OPENTSDB_SERVER = parser.getint("host", OPENTSDB_SERVER)
+        OPENTSDB_SERVER = parser.get("opentsdb", "server", fallback=OPENTSDB_SERVER)
 
     if parser.has_section("general"):
         global BASE_PATH
-        BASE_PATH = parser.get("base_path", BASE_PATH)
+        BASE_PATH = parser.get("general", "base_path", fallback=BASE_PATH)
 
         global EXPORT_PATH
-        EXPORT_PATH = parser.get("export_path", EXPORT_PATH)
+        EXPORT_PATH = parser.get("general", "export_path", fallback=EXPORT_PATH)
 
 
 DTYPES_BASE_DIR = {
@@ -77,3 +78,5 @@ TIMESTAMP_PARSING_COLUMNS = ["ts.timestamp"]
 
 PHOTOMETRY_FLOAT_FIELDS = ["ts.magnitude", "target.right_ascension", "target.declination", "instrument.field_of_view"]
 PHOTOMETRY_INT_FIELDS = ["ts.flux_calibration_level", "ts.exposure"]
+
+update()

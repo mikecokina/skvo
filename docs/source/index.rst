@@ -29,7 +29,9 @@ Data comming from photometric observations consist of three different types and 
 Images (media)
 --------------
 
-blah
+Media (images) are data representing real images cominng from observation. We are not providing raw iamges, but
+processed images. Those data re not supposed to replace observation timeseries data. Their quality is donwscaled.
+The main reaseon to store those data is give information to user, where points in OpenTSDB coming from.
 
 
 Metadata
@@ -266,9 +268,61 @@ Basicaly, pandas dataframes are converted to the python list of dicts shown abov
 'POSTed' by ``pyopentsdb`` python library on the OpenTSDB HTTP API endpoint, ``/api/put/``.
     
 
+Finally, just media left. For given observation, each image file is read from local storage as raw object and with couple of
+additional metadta is serialized to the following schema::
 
-https://netdisk.sk/file/pGtogvTMJ29O_55VLlRtsQ/delete/frvRNgUq
-    
+    {
+        "content": <raw_image_content>,
+        "filename": <filename>,
+        "target": <target>,
+        "md5_crc": <md5_crc>,
+        "source": <source>,
+        "bandpass": <bandpass>,
+        "start_date": <datetime_of_first_observation_point>
+    }
+
+Raw content is GZIPed before operation of serialisation and md5 CRC sum is computet from gziped object. Such schema is converted to
+**avro** binary and this bytes like object is POSTed to endpoint ``/api/photometry/media`` where avro is decoded and file is stored.
+
+Serialized information are encoded to avro based on the following schema::
+
+    {
+    "namespace": "skvo.types",
+    "name": "PhotometryMediaDataContainer",
+    "type": "record",
+    "fields": [
+        {
+            "name": "content",
+            "type": "bytes"
+        },
+        {
+            "name": "filename",
+            "type": "string"
+        },
+        {
+            "name": "md5_crc",
+            "type": "string"
+        },
+        {
+            "name": "source",
+            "type": "string"
+        },
+        {
+            "name": "bandpass",
+            "type": "string"
+        },
+        {
+            "name": "target",
+            "type": "string"
+        },
+        {
+            "name": "start_date",
+            "type": "string"
+        }
+    ]
+}
+
+
 Lookup
 ~~~~~~
 

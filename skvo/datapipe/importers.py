@@ -41,12 +41,9 @@ class OpenTsdbHttpImporter(AbstractHttpImporter):
 
     def http_send(self, batch):
         start_time = time.time()
-        print(batch)
         end_time = time.time() + 0.000001
         speed = len(batch) / (end_time - start_time)
         self._logger.info("Imported {} metrics, speed {} metrics/s".format(len(batch), speed))
-        return
-
         try:
             self._tsdb_connector.put(data=batch)
         except Exception as e:
@@ -84,7 +81,7 @@ class MetadataHttpImporter(AbstractHttpImporter):
             'Content-type': 'application/json',
             'Accept': 'application/json'
         }
-        r = self._session.put(self.api_endpoint, data=json.dumps(json_data), headers=headers)
+        r = self._session.post(self.api_endpoint, data=json.dumps(json_data), headers=headers)
         self._session.close()
         return r
 

@@ -136,8 +136,8 @@ def df_to_errors_tsdb_metrics(df, source):
     df, timestamp = preprocess_photometry_joined_df(df)
     return [
         {
-            'metric': get_exposure_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
-                                                    df["bandpass.bandpass_uid"].iloc[i]),
+            'metric': get_error_tsdb_metric_name(df["target.catalogue_value"].iloc[i],
+                                                 df["bandpass.bandpass_uid"].iloc[i]),
             'timestamp': int(timestamp.iloc[i]),
             'value': float(df["ts.magnitude_error"].iloc[i]),
             'tags':
