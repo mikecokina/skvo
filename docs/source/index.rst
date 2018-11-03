@@ -325,15 +325,15 @@ Serialized information are encoded to avro based on the following schema::
 Local storage structure on the remote server is the same as on the storage data are coming from, and so::
 
     data
-        `- upjs
-                `- photometry
-                            `- imgs
-                            |      `- 201802
-                            |               `- bet_Lyr_20180217
-                            |                                  `- Jonson.U
-                            |                                             `- bet_Lyr_20180217_0.png
-                            |                                             `- bet_Lyr_20180217_1.png
-                            |                                             `- bet_Lyr_20180217_2.png
+        `- source
+                 `- dtype
+                         `- imgs
+                                `- yyyymm
+                                         `- objectuid_yyyymmdd [datetime when observation starts]
+                                                              `- bandpass_uid
+                                                                            `- objectuid_yyyymmdd_id.jpeg/png/whatever
+
+where ``data`` path is specified in ``skvo.ini`` config file as ``export_path``, of course, on the server side.
 
 Lookup
 ~~~~~~
