@@ -84,17 +84,29 @@ class MetadataHttpImporter(AbstractHttpImporter):
             'Content-type': 'application/json',
             'Accept': 'application/json'
         }
-        r = self._session.post(self.api_endpoint, data=json.dumps(json_data), headers=headers)
+        r = self._session.put(self.api_endpoint, data=json.dumps(json_data), headers=headers)
+        self._session.close()
         return r
 
 
 class MediaHttpImporter(AbstractHttpImporter):
     def __init__(self, server):
         self._server = server
+        self._session = requests.Session()
 
     @property
     def server(self):
         return self._server
 
-    def imp(self, content_json):
-        pass
+    @property
+    def api_endpoint(self):
+        return "{}/api/photometry/media".format(self._server)
+
+    def imp(self, raw_data, filename):
+        headers = {
+            'Content-Type': 'multipart/form-data',
+            'Content-Disposition': 'attachment; filename = "{}'.format(filename),
+        }
+        r = self._session.post(self.api_endpoint, data=raw_data, headers=headers)
+        self._session.close()
+        return r

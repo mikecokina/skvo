@@ -5,6 +5,7 @@ import os
 from queue import Queue
 from threading import Thread
 
+from utils import utils
 from conf import config
 from datapipe.importers import MetadataHttpImporter, OpenTsdbHttpImporter, MediaHttpImporter
 from datapipe.photometry import filesystem as fs
@@ -105,39 +106,38 @@ def run():
             # observation_id = transform.get_response_observation_id(metadata_import_response)
 
             observation_id = 5
-            tsdb_observation_id_metrics = transform.observation_id_data_df_to_tsdb_metrics(joined_df, source,
-                                                                                           observation_id)
-            tsdb_timeseries_metrics = transform.df_to_timeseries_tsdb_metrics(joined_df, source)
-            tsdb_exposure_metrics = transform.df_to_exposure_tsdb_metrics(joined_df, source)
-            tsdb_errors_metrics = transform.df_to_errors_tsdb_metrics(joined_df, source)
-
-            lambdas = [
-                lambda: tsdb_importer.imp(tsdb_observation_id_metrics),
-                lambda : tsdb_importer.imp(tsdb_timeseries_metrics),
-                lambda: tsdb_importer.imp(tsdb_errors_metrics),
-                lambda : tsdb_importer.imp(tsdb_exposure_metrics)
-            ]
-            async_import(lambdas)
-
-
-
-
-
-
-
-
-
-
-
-
-            # media_files = fs.get_media_list_on_path(full_media_path)
-            # for mf in media_files:
-            #     full_media_file_path = os.path.join(full_media_path, mf)
-            #     media_file_content = fs.read_file_as_binary(full_media_file_path)
-            #     import_content_json = \
-            #         transform.photometry_media_to_import_json(media_file_content, mf, metadata, data, source)
-            #     media_importer.imp(import_content_json)
+            # tsdb_observation_id_metrics = transform.observation_id_data_df_to_tsdb_metrics(joined_df, source,
+            #                                                                                observation_id)
+            # tsdb_timeseries_metrics = transform.df_to_timeseries_tsdb_metrics(joined_df, source)
+            # tsdb_exposure_metrics = transform.df_to_exposure_tsdb_metrics(joined_df, source)
+            # tsdb_errors_metrics = transform.df_to_errors_tsdb_metrics(joined_df, source)
             #
+            # lambdas = [
+            #     lambda: tsdb_importer.imp(tsdb_observation_id_metrics),
+            #     lambda: tsdb_importer.imp(tsdb_timeseries_metrics),
+            #     lambda: tsdb_importer.imp(tsdb_errors_metrics),
+            #     lambda: tsdb_importer.imp(tsdb_exposure_metrics)
+            # ]
+            # async_import(lambdas)
+
+            media_files = fs.get_media_list_on_path(full_media_path)
+
+            for mf in media_files:
+                full_media_file_path = os.path.join(full_media_path, mf)
+                # get raw content of image
+                media_file_content = fs.read_file_as_binary(full_media_file_path)
+                # gzip content
+                media_file_gzip = utils.compress(media_file_content)
+                # computet md5 crc
+                crc = utils.md5_raw_content(media_file_gzip)
+                # prepare avro chema compatible data
+                avro_schema_data = \
+                    transform.avro_msg_serializer(media_file_gzip, mf, metadata, data, source, crc)
+                # prepare avro binary
+                avro_raw_data = transform.encode_avro_message(avro_schema_data)
+
+                # import
+                media_importer.imp(avro_raw_data, avro_schema_data["filename"])
 
             # photometry_loader = transform.get_photometry_loader(transform=None, init_sink=None)
 

@@ -111,6 +111,25 @@ def read_file_as_binary(path):
         return content
 
 
+def write_file_as_binary(path, raw_content):
+    with open(path, "wb") as wbf:
+        wbf.write(raw_content)
+
+
 def is_image(path):
     filename, file_extension = os.path.splitext(path)
     return True if str(file_extension).lower()[1:] in ["png", "jpg", "jpeg"] else False
+
+
+def get_media_path_from_metadata(target, base_path, source, bandpass, start_date):
+    date_dir = "{}{}".format(start_date.year, start_date.month)
+    target_date_dir = "{}_{}{}{}" \
+                      "".format(target, start_date.year, start_date.month, start_date.day)
+    return os.path.join(
+        base_path, source, config.DTYPES_BASE_DIR["photometry"], "media", date_dir, target_date_dir,
+        bandpass
+    )
+
+
+def create_media_path_if_needed(path):
+    os.makedirs(path, exist_ok=True)

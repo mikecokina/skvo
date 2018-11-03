@@ -1,0 +1,35 @@
+{
+    "namespace": "skvo.types",
+    "name": "PhotometryMediaDataContainer",
+    "type": "record",
+    "fields": [
+        {
+            "name": "content",
+            "type": "bytes"
+        },
+        {
+            "name": "filename",
+            "type": "string"
+        },
+        {
+            "name": "md5_crc",
+            "type": "string"
+        },
+        {
+            "name": "source",
+            "type": "string"
+        },
+        {
+            "name": "bandpass",
+            "type": "string"
+        },
+        {
+            "name": "target",
+            "type": "string"
+        },
+        {
+            "name": "start_date",
+            "type": "string"
+        }
+    ]
+}

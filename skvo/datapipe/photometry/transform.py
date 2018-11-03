@@ -3,10 +3,12 @@ import json
 
 import os
 import requests
+import io
+import avro
 
+from avro.io import DatumWriter
 from conf import config
 from datapipe.photometry import config as photometry_config
-from skvo import settings
 from utils import time_utils
 from utils.special_characters import special_characters_encode
 
@@ -154,6 +156,8 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
     df_timestamp = time_utils.parse_timestamp(df)
     timestamp = time_utils.pd_timestamp_to_unix(df_timestamp, unit='ms')
     df["ts.unix"] = timestamp
+    df = df.sort_values("ts.unix")
+    df = df.reset_index(drop=True)
     start_date = datetime.datetime.strptime(df["ts.timestamp"][df.first_valid_index()], "%Y-%m-%d %H:%M:%S")
 
     metadata = \
@@ -221,15 +225,68 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
     return metadata
 
 
-def photometry_media_to_import_json(media_content, filename, data, metadata, source):
+def avro_msg_serializer(media_content, filename, metadata_df, data_df, source, md5_crc):
+    df = data_df.copy()
+    df_timestamp = time_utils.parse_timestamp(df)
+    timestamp = time_utils.pd_timestamp_to_unix(df_timestamp, unit='ms')
+    df["ts.unix"] = timestamp
+    df = df.sort_values("ts.unix")
+    df = df.reset_index(drop=True)
+    start_date = df["ts.timestamp"][df.first_valid_index()]
+
     import_json = {
         "content": media_content,
         "filename": filename,
+        "target": metadata_df["target.target"].iloc[0],
+        "md5_crc": md5_crc,
         "source": source,
-        "bandpass": None
+        "bandpass": metadata_df["bandpass.bandpass_uid"].iloc[0],
+        "start_date": start_date
+    }
+    return import_json
+
+
+def avro_raw_deserializer(avro_decoded_data):
+
+    return {
+        "content": avro_decoded_data["content"],
+        "filename": avro_decoded_data["filename"],
+        "target": avro_decoded_data["target"],
+        "md5_crc": avro_decoded_data["md5_crc"],
+        "source": avro_decoded_data["source"],
+        "bandpass": avro_decoded_data["bandpass"],
+        "start_date": datetime.datetime.strptime(avro_decoded_data["start_date"], "%Y-%m-%d %H:%M:%S")
     }
 
-    return import_json
+
+def get_media_avro_path():
+    return os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        'avsc', 'photometry_media.avsc'
+    )
+
+
+def get_media_avro_schema():
+    with open(get_media_avro_path(), 'r') as f:
+        return avro.schema.Parse(f.read())
+
+
+def encode_avro_message(data):
+    datum_writer = DatumWriter(get_media_avro_schema())
+    bytes_writer = io.BytesIO()
+    encoder = avro.io.BinaryEncoder(bytes_writer)
+    datum_writer.write(data, encoder)
+    raw_bytes = bytes_writer.getvalue()
+    return raw_bytes
+
+
+def decode_avro_message(bytes_reader):
+    # bytes_reader = io.BytesIO(msg)
+    # bytes_reader = in_memory_uploaded_file.read()
+    decoder = avro.io.BinaryDecoder(bytes_reader)
+    reader = avro.io.DatumReader(get_media_avro_schema())
+    decoded_values = reader.read(decoder)
+    return decoded_values
 
 
 def convert_df_float_values(df):
