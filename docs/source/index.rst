@@ -287,41 +287,53 @@ Raw content is GZIPed before operation of serialisation and md5 CRC sum is compu
 Serialized information are encoded to avro based on the following schema::
 
     {
-    "namespace": "skvo.types",
-    "name": "PhotometryMediaDataContainer",
-    "type": "record",
-    "fields": [
-        {
-            "name": "content",
-            "type": "bytes"
-        },
-        {
-            "name": "filename",
-            "type": "string"
-        },
-        {
-            "name": "md5_crc",
-            "type": "string"
-        },
-        {
-            "name": "source",
-            "type": "string"
-        },
-        {
-            "name": "bandpass",
-            "type": "string"
-        },
-        {
-            "name": "target",
-            "type": "string"
-        },
-        {
-            "name": "start_date",
-            "type": "string"
-        }
-    ]
-}
+        "namespace": "skvo.types",
+        "name": "PhotometryMediaDataContainer",
+        "type": "record",
+        "fields": [
+            {
+                "name": "content",
+                "type": "bytes"
+            },
+            {
+                "name": "filename",
+                "type": "string"
+            },
+            {
+                "name": "md5_crc",
+                "type": "string"
+            },
+            {
+                "name": "source",
+                "type": "string"
+            },
+            {
+                "name": "bandpass",
+                "type": "string"
+            },
+            {
+                "name": "target",
+                "type": "string"
+            },
+            {
+                "name": "start_date",
+                "type": "string"
+            }
+        ]
+    }
 
+Local storage structure on the remote server is the same as on the storage data are coming from, and so::
+
+    data
+        `- upjs
+                `- photometry
+                            `- imgs
+                            |      `- 201802
+                            |               `- bet_Lyr_20180217
+                            |                                  `- Jonson.U
+                            |                                             `- bet_Lyr_20180217_0.png
+                            |                                             `- bet_Lyr_20180217_1.png
+                            |                                             `- bet_Lyr_20180217_2.png
 
 Lookup
 ~~~~~~
