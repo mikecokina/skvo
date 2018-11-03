@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 RAs = {"W_UMa": 9.43, "bet_Per": 3.08, "bet_Lyr": 18.5}
 DEs = {"W_UMa": 55.57, "bet_Per": 40.57, "bet_Lyr": 33.21}
 
-MOCK_DATA_LENGTH = 30
+MOCK_DATA_LENGTH = 15
 DEFAULT_BASE_PATH = os.path.join(os.path.expanduser("~/"), "skvo_data")
 CATALOGUE = "default"
 DEFAULT_DEV_DATA_STRUCT = {
@@ -151,7 +151,7 @@ def fill_basic_photometry_metatable_df(path):
     df["bandpass.photometric_system"] = "sys"
 
     df["instrument.instrument"] = "instrument.{}".format(instrument)
-    df["instrument.instrument_uid"] = "instrument.uid.{}".format(instrument)
+    # df["instrument.instrument_uid"] = "instrument.uid.{}".format(instrument)
     df["instrument.telescope"] = "instrument.telescope.{}".format(instrument)
     df["instrument.camera"] = "instrument.camera.{}".format(instrument)
     df["instrument.spectroscope"] = "instrument.spect.{}".format(instrument)
@@ -220,13 +220,13 @@ def prepare_data():
         p_dtables[key].to_csv(dtable_path, index=False)
         p_metatables[key].to_csv(metatable_path, index=False)
 
-    # for path_to_band_dir, media in p_media.items():
-    #     for png, img in media.items():
-    #         date = parse_datetime_from_path(path_to_band_dir)
-    #         date_suffix = "{}{}{}".format(date.year, date.month, date.day)
-    #
-    #         path = os.path.join(DEFAULT_BASE_PATH, path_to_band_dir, "{}_{}".format(date_suffix, png))
-    #         save_image(path, img)
+    for path_to_band_dir, media in p_media.items():
+        for png, img in media.items():
+            date = parse_datetime_from_path(path_to_band_dir)
+            date_suffix = "{}".format(datetime.datetime.strftime(date, "%Y%m%d"))
+
+            path = os.path.join(DEFAULT_BASE_PATH, path_to_band_dir, "{}_{}".format(date_suffix, png))
+            save_image(path, img)
     logger.debug("Done")
 
 

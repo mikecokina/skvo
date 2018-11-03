@@ -75,10 +75,11 @@ class MetadataProcessor(object):
         self._logger.info("Starting metada processor")
         metadata_json = transform.photometry_data_to_metadata_json(metadata, data, source)
         metadata_import_response = self._importer.imp(metadata_json)
-        observation_uuid = transform.get_response_observation_uuid(metadata_import_response)
         observation_id = transform.get_response_observation_id(metadata_import_response)
+        instrument_uuid = transform.get_response_instrument_uuid(metadata_import_response)
+
         self._logger.info("Exiting metadata processor")
-        return observation_id, observation_uuid
+        return observation_id, instrument_uuid
 
 
 class DataProcessor(object):
@@ -125,10 +126,10 @@ class MediaProessor(object):
             full_media_file_path = os.path.join(path, mf)
             # get raw content of image
             media_file_content = fs.read_file_as_binary(full_media_file_path)
+            # computet md5 crc
+            crc = utils.md5_raw_content(media_file_content)
             # gzip content
             media_file_gzip = utils.compress(media_file_content)
-            # computet md5 crc
-            crc = utils.md5_raw_content(media_file_gzip)
             # prepare avro chema compatible data
             avro_schema_data = \
                 transform.avro_msg_serializer(media_file_gzip, mf, metadata, data, source, crc)
@@ -166,7 +167,7 @@ class PhotometryProcessor(object):
 
                 metadata = self._metadata_proessor.get_metadata(full_dtables_path, metatable_name)
                 data = self._data_processor.get_data(full_dtables_path, dtable_name)
-                oid, ouuid = self._metadata_proessor.process(metadata, data, source)
+                oid, _ = self._metadata_proessor.process(metadata, data, source)
                 self._data_processor.process(metadata, data, source, oid)
                 self._media_processor.process(full_media_path, metadata, data, source)
 
@@ -177,6 +178,7 @@ def run():
     logger.info("running photometry uploader")
     processor = PhotometryProcessor()
     processor.process()
+    logger.info("terminatring photometry uploader")
 
 
 def main():

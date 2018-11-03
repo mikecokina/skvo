@@ -1,5 +1,6 @@
-from django.db import models
 from uuid import uuid4
+
+from django.db import models
 
 # Create your models here.
 
@@ -41,7 +42,7 @@ class Bandpass(models.Model):
 
 class Instrument(models.Model):
     instrument = models.CharField(max_length=64, null=False)
-    instrument_uid = models.CharField(max_length=128, null=False, unique=True)
+    instrument_uuid = models.UUIDField(max_length=128, null=False, unique=True, editable=False, default=uuid4)
     telescope = models.CharField(max_length=64, null=False)
     camera = models.CharField(max_length=64, null=True, default=None)
     spectroscope = models.CharField(max_length=64, null=True, default=None)
@@ -79,7 +80,7 @@ class DataId(models.Model):
 
 
 class Observation(models.Model):
-    observation_uuid = models.UUIDField(null=False, unique=True, default=uuid4, editable=False)
+    observation_uuid = models.UUIDField(max_length=128, null=False, unique=True)
     access = models.ForeignKey(to=AccessRights, on_delete=models.PROTECT)
     target = models.ForeignKey(to=Target, on_delete=models.PROTECT)
     instrument = models.ForeignKey(to=Instrument, on_delete=models.PROTECT)

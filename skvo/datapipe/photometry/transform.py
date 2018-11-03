@@ -1,15 +1,17 @@
 import datetime
-import json
-
-import os
-import requests
 import io
-import avro
+import json
+import os
+from uuid import uuid4
 
+import avro
+import requests
 from avro.io import DatumWriter
+
 from conf import config
 from datapipe.photometry import config as photometry_config
 from utils import time_utils
+from utils import utils
 from utils.special_characters import special_characters_encode
 
 
@@ -57,7 +59,7 @@ def get_observation_tsdb_metric_name(target_catalogue_value, bandpass_uid):
 
 def get_observation_id_tsdb_metric_name(target_catalogue_value, bandpass_uid):
     target_uid, bandpass_uid, suffix = preprocess_tsdb_metric_keys(target_catalogue_value, bandpass_uid)
-    return '{}.{}.{}.{}'.format(target_uid, bandpass_uid, "observation_id", suffix)
+    return '{}.{}.{}.{}'.format(target_uid, bandpass_uid, "oid", suffix)
 
 
 def get_exposure_tsdb_metric_name(target_catalogue_value, bandpass_uid):
@@ -159,6 +161,7 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
     df = df.sort_values("ts.unix")
     df = df.reset_index(drop=True)
     start_date = datetime.datetime.strptime(df["ts.timestamp"][df.first_valid_index()], "%Y-%m-%d %H:%M:%S")
+    observation_uuid = str(uuid4())
 
     metadata = \
         {
@@ -179,7 +182,7 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
                         },
                         "instrument": {
                             "instrument": metadata_df["instrument.instrument"].iloc[0],
-                            "instrument_uid": metadata_df["instrument.instrument_uid"].iloc[0],
+                            # "instrument_uid": metadata_df["instrument.instrument_uid"].iloc[0],
                             "telescope": metadata_df["instrument.telescope"].iloc[0],
                             "camera": metadata_df["instrument.camera"].iloc[0] or None,
                             "spectroscope": metadata_df["instrument.spectroscope"].iloc[0] or None,
@@ -201,7 +204,8 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
                                 "organisation_did": metadata_df["organisation.organisation_did"].iloc[0],
                                 "email": metadata_df["organisation.email"].iloc[0]
                             }
-                        }
+                        },
+                        "observation_uuid": observation_uuid
                     },
                     "start_date": df["ts.timestamp"][df.first_valid_index()],
                     "end_date": df["ts.timestamp"][df.last_valid_index()],
@@ -247,7 +251,6 @@ def avro_msg_serializer(media_content, filename, metadata_df, data_df, source, m
 
 
 def avro_raw_deserializer(avro_decoded_data):
-
     return {
         "content": avro_decoded_data["content"],
         "filename": avro_decoded_data["filename"],
@@ -269,6 +272,10 @@ def get_media_avro_path():
 def get_media_avro_schema():
     with open(get_media_avro_path(), 'r') as f:
         return avro.schema.Parse(f.read())
+
+
+def compute_observation_hash(metadata, data, source):
+    pass
 
 
 def encode_avro_message(data):
@@ -303,15 +310,15 @@ def convert_df_int_values(df):
     return df
 
 
-def get_response_observation_uuid(response: requests.Response):
-    if response.status_code in [200, 201]:
-        content = json.loads(response.content.decode())
-        return content["photometry"][-1]["observation"]["observation_uuid"]
-    raise ValueError("Unexpected response status code")
-
-
 def get_response_observation_id(response: requests.Response):
     if response.status_code in [200, 201]:
         content = json.loads(response.content.decode())
         return content["photometry"][-1]["observation"]["id"]
+    raise ValueError("Unexpected response status code")
+
+
+def get_response_instrument_uuid(response: requests.Response):
+    if response.status_code in [200, 201]:
+        content = json.loads(response.content.decode())
+        return content["photometry"][-1]["observation"]["instrument"]["instrument_uuid"]
     raise ValueError("Unexpected response status code")

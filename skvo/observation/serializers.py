@@ -93,7 +93,12 @@ class ObservationSerializer(CustomModelSerializer):
 
     class Meta:
         model = models.Observation
-        exclude = ('created',)
+        exclude = ('created', )
+        extra_kwargs = {
+            'observation_hash': {
+                'validators': [],
+            }
+        }
 
 
 class PhotometrySerializer(CustomModelSerializer):
@@ -118,23 +123,24 @@ class PhotometryCreateSerializer(CustomModelSerializer):
 
     def create(self, validated_data):
         with transaction.atomic():
-            target, _ = models.Target.objects.get_or_create(validated_data["observation"].pop("target"))
-            bandpass, _ = models.Bandpass.objects.get_or_create(validated_data.pop("bandpass"))
-            instrument, _ = models.Instrument.objects.get_or_create(validated_data["observation"].pop("instrument"))
-            facility, _ = models.Facility.objects.get_or_create(validated_data["observation"].pop("facility"))
+            target, _ = models.Target.objects.get_or_create(**validated_data["observation"].pop("target"))
+            bandpass, _ = models.Bandpass.objects.get_or_create(**validated_data.pop("bandpass"))
+            instrument, _ = models.Instrument.objects.get_or_create(**validated_data["observation"].pop("instrument"))
+            facility, _ = models.Facility.objects.get_or_create(**validated_data["observation"].pop("facility"))
             organisation, _ = models.Organisation.objects.get_or_create(
-                validated_data["observation"]["dataid"].pop("organisation")
+                **validated_data["observation"]["dataid"].pop("organisation")
             )
-            access_rights, _ = models.AccessRights.objects.get_or_create(validated_data["observation"].pop("access"))
+            access_rights, _ = models.AccessRights.objects.get_or_create(**validated_data["observation"].pop("access"))
             dataid, _ = models.DataId.objects.get_or_create(
-                dict(**validated_data["observation"].pop("dataid"), organisation=organisation)
+                **dict(**validated_data["observation"].pop("dataid"), organisation=organisation)
             )
             observation, _ = models.Observation.objects.get_or_create(
-                access=access_rights, target=target, instrument=instrument, facility=facility, dataid=dataid
+                access=access_rights, target=target, instrument=instrument, facility=facility, dataid=dataid,
+                observation_uuid=validated_data["observation"].pop("observation_uuid")
             )
             validated_data.pop("observation")
             photometry, _ = models.Photometry.objects.get_or_create(
-                dict(**validated_data, observation=observation, bandpass=bandpass)
+                **dict(**validated_data, observation=observation, bandpass=bandpass)
             )
             return photometry
 

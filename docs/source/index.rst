@@ -180,7 +180,7 @@ and example is bellow::
 
 
 Finally, there is a one more metrics puting together all previous with related metadata in MySQL database. Used metric is
-**<target_uid>.<bandpass_uid>.observation_id.photometry.<version>** and all values stored in this metric are just the same ``observation_id``
+**<target_uid>.<bandpass_uid>.oid.photometry.<version>** and all values stored in this metric are just the same ``observation_id``
 from database working as a foreign key for relation database.
 
 

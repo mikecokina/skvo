@@ -122,9 +122,9 @@ def is_image(path):
 
 
 def get_media_path_from_metadata(target, base_path, source, bandpass, start_date):
-    date_dir = "{}{}".format(start_date.year, start_date.month)
-    target_date_dir = "{}_{}{}{}" \
-                      "".format(target, start_date.year, start_date.month, start_date.day)
+    date_dir = datetime.datetime.strftime(start_date, "%Y%m")
+    target_date_dir = "{}_{}" \
+                      "".format(target, datetime.datetime.strftime(start_date, "%Y%m%d"))
     return os.path.join(
         base_path, source, config.DTYPES_BASE_DIR["photometry"], "media", date_dir, target_date_dir,
         bandpass

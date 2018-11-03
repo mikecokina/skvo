@@ -37,7 +37,7 @@ def get_uploaded_mediafile_content(request):
     return msg_content
 
 
-def check_medidafile_crc(msg_content):
+def check_mediafile_crc(msg_content):
     if not utils.check_md5_crc(msg_content["content"], msg_content["md5_crc"]):
         raise ParseError("Invalid crc - probably corrupted file")
 
@@ -58,13 +58,19 @@ class PhotometryMedia(APIView):
 
         logger.debug("Getting message content of upload".format(request.data["file"]))
         msg_content = get_uploaded_mediafile_content(request)
+
+        logger.debug("Decompressing file")
+        msg_content["content"] = utils.decompress(msg_content["content"])
+
         logger.debug("Checking mediafile crc")
-        check_medidafile_crc(msg_content)
+        check_mediafile_crc(msg_content)
+
         media_dir_path = get_mediafile_dir(msg_content)
         mediafile_path = os.path.join(media_dir_path, msg_content["filename"])
 
-        logger.debug("Creating path: {}".format(media_dir_path))
-        filesystem.create_media_path_if_needed(media_dir_path)
+        if not os.path.isdir(media_dir_path):
+            logger.debug("Creating path: {}".format(media_dir_path))
+            filesystem.create_media_path_if_needed(media_dir_path)
         logger.debug("Checking whether file exists")
 
         if os.path.isfile(mediafile_path):
@@ -79,9 +85,6 @@ class PhotometryMedia(APIView):
                 logger.warning("File w/ same filename already exists, but CRC differ. Saving new file as {}"
                                "".format(msg_content["filename"]))
                 mediafile_path = os.path.join(media_dir_path, msg_content["filename"])
-
-        logger.debug("Decompressing file")
-        msg_content["content"] = utils.decompress(msg_content["content"])
         logger.info("Saving {}".format(mediafile_path))
         try:
             filesystem.write_file_as_binary(mediafile_path, msg_content["content"])
