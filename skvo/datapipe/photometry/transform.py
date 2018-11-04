@@ -9,7 +9,7 @@ import requests
 from avro.io import DatumWriter
 
 from conf import config
-from datapipe.photometry import config as photometry_config
+from datapipe.photometry import config as photometry_config, filesystem
 from utils import time_utils
 from utils import utils
 from utils.special_characters import special_characters_encode
@@ -83,7 +83,7 @@ def df_to_timeseries_tsdb_metrics(df, source):
             'value': float(df["ts.magnitude"].iloc[i]),
             'tags':
                 {
-                    'instrument': str(df["instrument.instrument"].iloc[0]),
+                    'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
                     'target': str(df["target.target"].iloc[0]),
                     'source': str(source),
                     'flux_calibration_level': int(df["ts.flux_calibration_level"].iloc[i]),
@@ -105,7 +105,7 @@ def observation_id_data_df_to_tsdb_metrics(df, source, observation_id):
             'value': int(observation_id),
             'tags':
                 {
-                    'instrument': str(df["instrument.instrument"].iloc[0]),
+                    'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
                     'target': str(df["target.target"].iloc[0]),
                     'source': str(source)
                 }
@@ -124,7 +124,7 @@ def df_to_exposure_tsdb_metrics(df, source):
             'value': int(df["ts.exposure"].iloc[i]),
             'tags':
                 {
-                    'instrument': str(df["instrument.instrument"].iloc[0]),
+                    'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
                     'target': str(df["target.target"].iloc[0]),
                     'source': str(source),
 
@@ -144,13 +144,19 @@ def df_to_errors_tsdb_metrics(df, source):
             'value': float(df["ts.magnitude_error"].iloc[i]),
             'tags':
                 {
-                    'instrument': str(df["instrument.instrument"].iloc[0]),
+                    'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
                     'target': str(df["target.target"].iloc[0]),
                     'source': str(source)
                 }
         }
         for i in range(timestamp.shape[0])
     ]
+
+
+def compute_sha512_from_metadata(metadata, salt):
+    metadata = metadata.sort_index(axis=1)
+    values = str(salt) + "___" + "___".join([str(metadata[col].iloc[0]) for col in metadata.columns])
+    return utils.sha512_content(str(values).encode('utf-8'))
 
 
 def photometry_data_to_metadata_json(metadata_df, data_df, source):
@@ -161,7 +167,7 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
     df = df.sort_values("ts.unix")
     df = df.reset_index(drop=True)
     start_date = datetime.datetime.strptime(df["ts.timestamp"][df.first_valid_index()], "%Y-%m-%d %H:%M:%S")
-    observation_uuid = str(uuid4())
+    observation_hash = compute_sha512_from_metadata(metadata_df, datetime.datetime.strftime(start_date, "%Y%m%d"))
 
     metadata = \
         {
@@ -182,7 +188,6 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
                         },
                         "instrument": {
                             "instrument": metadata_df["instrument.instrument"].iloc[0],
-                            # "instrument_uid": metadata_df["instrument.instrument_uid"].iloc[0],
                             "telescope": metadata_df["instrument.telescope"].iloc[0],
                             "camera": metadata_df["instrument.camera"].iloc[0] or None,
                             "spectroscope": metadata_df["instrument.spectroscope"].iloc[0] or None,
@@ -205,7 +210,7 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
                                 "email": metadata_df["organisation.email"].iloc[0]
                             }
                         },
-                        "observation_uuid": observation_uuid
+                        "observation_hash": observation_hash
                     },
                     "start_date": df["ts.timestamp"][df.first_valid_index()],
                     "end_date": df["ts.timestamp"][df.last_valid_index()],
@@ -237,6 +242,10 @@ def avro_msg_serializer(media_content, filename, metadata_df, data_df, source, m
     df = df.sort_values("ts.unix")
     df = df.reset_index(drop=True)
     start_date = df["ts.timestamp"][df.first_valid_index()]
+    mediafile_index = int(filesystem.get_file_part_index(filename))
+    mediafile_suffix = df["ts.unix"].iloc[mediafile_index]
+    filename, file_extension = os.path.splitext(filename)
+    filename = "{}___{}{}".format(filename, mediafile_suffix, file_extension)
 
     import_json = {
         "content": media_content,
@@ -274,10 +283,6 @@ def get_media_avro_schema():
         return avro.schema.Parse(f.read())
 
 
-def compute_observation_hash(metadata, data, source):
-    pass
-
-
 def encode_avro_message(data):
     datum_writer = DatumWriter(get_media_avro_schema())
     bytes_writer = io.BytesIO()
@@ -308,6 +313,11 @@ def convert_df_int_values(df):
         if column in df:
             df[column] = df[column].astype(int)
     return df
+
+
+def expand_metadata_with_instrument_uuid(metadata_df, uuid):
+    metadata_df["instrument.instrument_uuid"] = uuid
+    return metadata_df
 
 
 def get_response_observation_id(response: requests.Response):

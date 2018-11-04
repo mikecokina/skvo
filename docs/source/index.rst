@@ -56,7 +56,6 @@ Example of metadata content is shown bellow::
                 },
                 "instrument": {
                     "instrument": "instrument_name",
-                    "instrument_uid": "uid_for_instrument",
                     "telescope": "telescope",
                     "camera": "camera",
                     "spectroscope": "spectac",
@@ -78,6 +77,7 @@ Example of metadata content is shown bellow::
                     "publisher": "data_id_publisher",
                     "publisher_did": "http://data_id_publisher"
                 },
+                "observation_uuid": 4573a65f66e66aa685
             },
             "bandpass": {
                 "bandpass": "bandpass_name",
@@ -99,9 +99,14 @@ Each of the table is deffined by the following python classes as object realted 
 
 Uploading process will craete mentioned json and ``POST`` it to the running endpoint ``/api/photometry/metadata``.
 On the backend, there is checked which of the incomming model objects already contain desired information and in such case
-won't be craeted and which are not stored in database and will be created on fly. In case, new observation is created, unique ``uuid4``
-key is assigned and will be returned in response. This uuid is important pointer to the observation and works as foreign key for
-time series (observation points, errors and exposure) data stored in OpenTSDB.
+won't be craeted and which are not stored in database and will be created on fly. In case, new observation is created, unique ``hash``
+based on all metadata is assigned to this record. This hash is intended to separate observation based on days.
+Hash is computed as ``sha512`` from string created as metadata joined with ``___``. Order is based on name of columnes, since
+columns of dataframe are sorted.
+On fly, there is generated also observation id,
+as primary key for ``observation`` model table and works as foreign key for time series (observation points, errors and exposure) data stored in OpenTSDB.
+
+Response also contain an ``instrument uuid``. Thaht uuid is used in timeseries data as tag value of instrument key.
 
 Observation (time series) data:
 -------------------------------
@@ -322,7 +327,7 @@ Serialized information are encoded to avro based on the following schema::
         ]
     }
 
-Local storage structure on the remote server is the same as on the storage data are coming from, and so::
+Local storage structure on the remote server is almost the same as on the storage data are coming from, and so::
 
     data
         `- source
@@ -331,9 +336,15 @@ Local storage structure on the remote server is the same as on the storage data 
                                 `- yyyymm
                                          `- objectuid_yyyymmdd [datetime when observation starts]
                                                               `- bandpass_uid
-                                                                            `- objectuid_yyyymmdd_id.jpeg/png/whatever
+                                                                            `- objectuid_yyyymmdd_id___unixtimestamp.jpeg/png/whatever
 
 where ``data`` path is specified in ``skvo.ini`` config file as ``export_path``, of course, on the server side.
+
+Change against a local storage, where data are comming from is in filename. There is added an unix timestamp in filename,
+since in time series subset, we can loose information, which file belongs to which observation point.
+During upload process, timestamp is obtained from dataframe based on the index in filename. Just beware, in case,
+there is any inconsistency between data table and order of ids in filename of image, wrong timestamp will be assigned to image
+filename.
 
 Lookup
 ~~~~~~

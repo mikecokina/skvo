@@ -122,6 +122,8 @@ class MediaProessor(object):
     def process(self, path, metadata, data, source):
         self._logger.info("Exiting media processor")
         media_files = fs.get_media_list_on_path(path)
+        media_files = fs.sort_files_by_part(media_files)
+
         for mf in media_files:
             full_media_file_path = os.path.join(path, mf)
             # get raw content of image
@@ -167,7 +169,8 @@ class PhotometryProcessor(object):
 
                 metadata = self._metadata_proessor.get_metadata(full_dtables_path, metatable_name)
                 data = self._data_processor.get_data(full_dtables_path, dtable_name)
-                oid, _ = self._metadata_proessor.process(metadata, data, source)
+                oid, iuuid = self._metadata_proessor.process(metadata, data, source)
+                metadata = transform.expand_metadata_with_instrument_uuid(metadata, iuuid)
                 self._data_processor.process(metadata, data, source, oid)
                 self._media_processor.process(full_media_path, metadata, data, source)
 

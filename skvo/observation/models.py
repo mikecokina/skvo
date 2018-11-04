@@ -80,7 +80,7 @@ class DataId(models.Model):
 
 
 class Observation(models.Model):
-    observation_uuid = models.UUIDField(max_length=128, null=False, unique=True)
+    observation_hash = models.CharField(max_length=128, null=False, unique=True)
     access = models.ForeignKey(to=AccessRights, on_delete=models.PROTECT)
     target = models.ForeignKey(to=Target, on_delete=models.PROTECT)
     instrument = models.ForeignKey(to=Instrument, on_delete=models.PROTECT)

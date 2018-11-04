@@ -155,7 +155,7 @@ def fill_basic_photometry_metatable_df(path):
     df["instrument.telescope"] = "instrument.telescope.{}".format(instrument)
     df["instrument.camera"] = "instrument.camera.{}".format(instrument)
     df["instrument.spectroscope"] = "instrument.spect.{}".format(instrument)
-    df["instrument.field_of_view"] = random.randint(10, 20)
+    df["instrument.field_of_view"] = random.randint(10, 12)
     df["instrument.description"] = "instrument.description"
 
     df["facility.facility"] = "facility.in.{}".format(source)

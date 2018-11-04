@@ -133,3 +133,14 @@ def get_media_path_from_metadata(target, base_path, source, bandpass, start_date
 
 def create_media_path_if_needed(path):
     os.makedirs(path, exist_ok=True)
+
+
+def get_file_part_index(filename):
+    p = re.compile(r'[0-9]*\.')
+    s = p.search(filename).group()
+    return int(re.sub(r'\.', '', s))
+
+
+def sort_files_by_part(files):
+    file_parts = [int(get_file_part_index(f)) for f in files]
+    return [f for _, f in sorted(zip(file_parts, files))]

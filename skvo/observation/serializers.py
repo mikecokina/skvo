@@ -136,7 +136,7 @@ class PhotometryCreateSerializer(CustomModelSerializer):
             )
             observation, _ = models.Observation.objects.get_or_create(
                 access=access_rights, target=target, instrument=instrument, facility=facility, dataid=dataid,
-                observation_uuid=validated_data["observation"].pop("observation_uuid")
+                observation_hash=validated_data["observation"].pop("observation_hash")
             )
             validated_data.pop("observation")
             photometry, _ = models.Photometry.objects.get_or_create(
