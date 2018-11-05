@@ -19,6 +19,9 @@ logger = logging.getLogger("observation.view")
 # Create your views here.
 
 
+# todo: !!!important!!! refactor all to viewsets and add upload metadata restriction by users
+
+
 class PhotometryList(generics.ListCreateAPIView):
     queryset = models.Photometry.objects.all()
 

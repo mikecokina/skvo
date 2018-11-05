@@ -52,6 +52,7 @@ Example of metadata content is shown bellow::
                     "description": "desc",
                     "right_ascension": "0.1000000000",
                     "declination": "0.2000000000",
+                    "equinox": "J2000",
                     "target_class": null
                 },
                 "instrument": {
@@ -77,7 +78,7 @@ Example of metadata content is shown bellow::
                     "publisher": "data_id_publisher",
                     "publisher_did": "http://data_id_publisher"
                 },
-                "observation_uuid": 4573a65f66e66aa685
+                "observation_hash": 4573a65f66e66aa685
             },
             "bandpass": {
                 "bandpass": "bandpass_name",

@@ -88,7 +88,8 @@ def df_to_timeseries_tsdb_metrics(df, source):
                     'source': str(source),
                     'flux_calibration_level': int(df["ts.flux_calibration_level"].iloc[i]),
                     'flux_calibration': str(df["ts.flux_calibration"].iloc[i]),
-                    'timeframe_reference_possition': str(df["ts.timeframe_reference_position"].iloc[i])
+                    'timeframe_reference_possition': str(df["ts.timeframe_reference_position"].iloc[i]),
+                    'dtype': 'observation'
                 }
         }
         for i in range(timestamp.shape[0])
@@ -107,7 +108,8 @@ def observation_id_data_df_to_tsdb_metrics(df, source, observation_id):
                 {
                     'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
                     'target': str(df["target.target"].iloc[0]),
-                    'source': str(source)
+                    'source': str(source),
+                    'dtype': 'oid'
                 }
         }
         for i in range(timestamp.shape[0])
@@ -127,6 +129,7 @@ def df_to_exposure_tsdb_metrics(df, source):
                     'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
                     'target': str(df["target.target"].iloc[0]),
                     'source': str(source),
+                    'dtype': 'exposure'
 
                 }
         }
@@ -146,7 +149,8 @@ def df_to_errors_tsdb_metrics(df, source):
                 {
                     'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
                     'target': str(df["target.target"].iloc[0]),
-                    'source': str(source)
+                    'source': str(source),
+                    'dtype': 'error'
                 }
         }
         for i in range(timestamp.shape[0])
@@ -184,7 +188,8 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
                             "description": metadata_df["target.description"].iloc[0],
                             "right_ascension": metadata_df["target.right_ascension"].iloc[0],
                             "declination": metadata_df["target.declination"].iloc[0],
-                            "target_class": metadata_df["target.target_class"].iloc[0]
+                            "target_class": metadata_df["target.target_class"].iloc[0],
+                            "equinox": metadata_df["target.equinox"].iloc[0]
                         },
                         "instrument": {
                             "instrument": metadata_df["instrument.instrument"].iloc[0],
@@ -220,13 +225,13 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
                         "spectral_band_type": metadata_df["bandpass.spectral_band_type"].iloc[0],
                         "photometric_system": metadata_df["bandpass.photometric_system"].iloc[0]
                     },
-                    "media": os.path.join(
+                    "media": str(os.path.join(
                         source, config.DTYPES_BASE_DIR["photometry"], "media",
                         datetime.datetime.strftime(start_date, "%Y%m"),
                         "{}_{}".format(metadata_df["target.target"].iloc[0],
                                        datetime.datetime.strftime(start_date, "%Y%m%d")),
                         metadata_df["bandpass.bandpass_uid"].iloc[0]
-                    )
+                    )).replace(os.sep, '::os.sep::')
                 }
             ]
         }

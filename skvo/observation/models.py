@@ -25,6 +25,7 @@ class Target(models.Model):
     description = models.CharField(max_length=128, null=True)
     right_ascension = models.DecimalField(max_digits=20, decimal_places=10, null=False)
     declination = models.DecimalField(max_digits=20, decimal_places=10, null=False)
+    equinox = models.CharField(max_length=64, null=False)
     target_class = models.CharField(max_length=128, null=True)
     created = models.DateTimeField(auto_now_add=True)
 

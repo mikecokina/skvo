@@ -143,6 +143,7 @@ def fill_basic_photometry_metatable_df(path):
     df["target.description"] = "{} description".format(target)
     df["target.right_ascension"] = target_ra
     df["target.declination"] = target_de
+    df["target.equinox"] = "J2000"
     df["target.target_class"] = "variable"
 
     df["bandpass.bandpass"] = "band.{}".format(band)

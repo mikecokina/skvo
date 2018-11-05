@@ -79,4 +79,17 @@ TIMESTAMP_PARSING_COLUMNS = ["ts.timestamp"]
 PHOTOMETRY_FLOAT_FIELDS = ["ts.magnitude", "target.right_ascension", "target.declination", "instrument.field_of_view"]
 PHOTOMETRY_INT_FIELDS = ["ts.flux_calibration_level", "ts.exposure"]
 
+OPENTSDB_QUERY = dict(
+    ms=True,
+    show_tsuids=False,
+    no_annotations=False,
+    global_annotations=False,
+    show_summary=False,
+    show_stats=False,
+    show_query=False,
+    delete_match=False,
+    timezone='UTC',
+    use_calendar=False,
+)
+
 update()

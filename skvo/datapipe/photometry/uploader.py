@@ -181,7 +181,7 @@ def run():
     logger.info("running photometry uploader")
     processor = PhotometryProcessor()
     processor.process()
-    logger.info("terminatring photometry uploader")
+    logger.info("terminating photometry uploader")
 
 
 def main():
