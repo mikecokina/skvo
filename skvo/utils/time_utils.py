@@ -100,6 +100,10 @@ def unix_timestamp_to_tsdb(unix_timestamp, unit='ns'):
     return tsdb_ts
 
 
+def add_timezone_to_pd_series(series, timezone="UTC"):
+    return pd.Series([series.iloc[i].tz_localize(timezone) for i in range(len(series))])
+
+
 def parse_timestamp(df):
     """
     Extract single timestamp series from data

@@ -87,7 +87,7 @@ OPENTSDB_QUERY = dict(
     show_summary=False,
     show_stats=False,
     show_query=False,
-    delete_match=False,
+    delete=False,
     timezone='UTC',
     use_calendar=False,
 )

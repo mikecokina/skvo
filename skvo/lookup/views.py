@@ -65,12 +65,7 @@ class LookupPostView(APIView):
     def get(self, request, *args, **kwargs):
         observations = get_photometry_observation()
         metadata = get_observation_intervals(observations)
-        read_tsdb.get_samples(tsdb_connector=TSDB_CONNECTOR, metadata=metadata, version=config.NUM_VERSION)
-
-        # read_tsdb.get_data(tsdb_connector=TSDB_CONNECTOR, target='bet_Lyr', start_date=datetime.datetime(2010, 1, 1),
-        #                    version=0)
-        # read_tsdb.get_samples(tsdb_connector=TSDB_CONNECTOR, target='bet_Lyr', start_date=datetime.datetime(2010, 1, 1),
-        #                       version=0)
+        samples = read_tsdb.get_samples(tsdb_connector=TSDB_CONNECTOR, metadata=metadata, version=config.NUM_VERSION)
 
         return Response("GET_OK", status=200)
 

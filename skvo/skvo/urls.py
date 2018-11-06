@@ -24,11 +24,13 @@ from rest_framework.reverse import reverse
 
 from lookup.views import LookupGetView
 
+# todo: add ping for opentsdb to avoid endless waiting
+
 
 @api_view(['GET'])
 def api_root(request, *args, **kwargs):
     return Response({
-        'search': reverse('search', request=request),
+        'lookup': reverse('lookup', request=request),
         'metadata': reverse('metadata', request=request),
     })
 

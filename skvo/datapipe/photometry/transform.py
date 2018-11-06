@@ -12,6 +12,7 @@ from conf import config
 from datapipe.photometry import config as photometry_config, filesystem
 from utils import time_utils
 from utils import utils
+from datapipe import utils as dputils
 from utils.special_characters import special_characters_encode
 
 
@@ -337,3 +338,53 @@ def get_response_instrument_uuid(response: requests.Response):
         content = json.loads(response.content.decode())
         return content["photometry"][-1]["observation"]["instrument"]["instrument_uuid"]
     raise ValueError("Unexpected response status code")
+
+
+def sample_tsdb_response_to_df(tsdb_response):
+    # there shouldn't be a case, when there is more values with sme instrument and start date
+    # in real life you are not able observe in one time, same object one the sme instrument twice
+    # in case of two nasmyth focus, each of them have to be marked with different instrument
+    return [
+        {
+            "samples": int(list(metric["dps"].values())[0]),
+            "start_date": int(list(metric["dps"].keys())[0]),
+            "instrument_uuid": metric["tags"]["instrument"],
+            "source": metric["tags"]["source"],
+            "target": metric["tags"]["target"],
+            "bandpass": dputils.parse_bandpass_from_metric(metric["metric"])
+        }
+        for metric in tsdb_response
+    ]
+
+
+def samples_df_to_dict(df):
+    return [
+        {
+            "start_date": df["start_date"].iloc[i],
+            "end_date": df["end_date"].iloc[i],
+            "observation": {
+                "obs": df["observation_id"].iloc[i]
+            },
+            "instrument": {
+                "inst": df["instrument_uuid"].iloc[i]
+            },
+            "source": df["source"].iloc[i],
+            "target": {
+                "tar": df["target"].iloc[i]
+            },
+            "bandpass": df["bandpass"].iloc[i]
+        }
+        for i in range(len(df))
+    ]
+
+
+def get_instrument_by_uuid(uuid):
+    pass
+
+
+def get_observation_by_id(id):
+    pass
+
+
+def get_target_by_catalogue_value(cat_val):
+    pass
