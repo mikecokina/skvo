@@ -2,11 +2,11 @@ import datetime
 import io
 import json
 import os
-from uuid import uuid4
 
 import avro
 import requests
 from avro.io import DatumWriter
+from django.forms import model_to_dict
 
 from conf import config
 from datapipe.photometry import config as photometry_config, filesystem
@@ -14,6 +14,7 @@ from utils import time_utils
 from utils import utils
 from datapipe import utils as dputils
 from utils.special_characters import special_characters_encode
+from observation import models
 
 
 def prepare_message():
@@ -363,28 +364,21 @@ def samples_df_to_dict(df):
             "start_date": df["start_date"].iloc[i],
             "end_date": df["end_date"].iloc[i],
             "observation": {
-                "obs": df["observation_id"].iloc[i]
+                "observation_id": df["observation_id"].iloc[i]
             },
-            "instrument": {
-                "inst": df["instrument_uuid"].iloc[i]
-            },
+            "instrument": dict(**model_to_dict(get_instrument_by_uuid(df["instrument_uuid"].iloc[i])[0])),
             "source": df["source"].iloc[i],
-            "target": {
-                "tar": df["target"].iloc[i]
-            },
-            "bandpass": df["bandpass"].iloc[i]
+            "target": dict(**model_to_dict(get_target_by_catalogue_value(df["target"].iloc[i])[0])),
+            "bandpass": df["bandpass"].iloc[i],
+            "samples": df["samples"].iloc[i]
         }
         for i in range(len(df))
     ]
 
 
 def get_instrument_by_uuid(uuid):
-    pass
-
-
-def get_observation_by_id(id):
-    pass
+    return models.Instrument.objects.filter(instrument_uuid=str(uuid))
 
 
 def get_target_by_catalogue_value(cat_val):
-    pass
+    return models.Target.objects.filter(catalogue_value=str(cat_val))
