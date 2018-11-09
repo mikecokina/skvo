@@ -350,5 +350,35 @@ filename.
 Lookup
 ~~~~~~
 
+SKVO providing an endpoint for searching observations defined by give combination of the following parameters:
 
+    - dataset - define a datasets, it means, you can lookup the data for the specific source (e.g. upjs, vhao, etc.)
+    - ra - right ascension of central points to starts lookup
+    - de - declination of central points to starts lookup
+    - target - target is another way, how to specify a central point; right ascension and declination is resolved on the backend; in case, ``ra`` and ``de`` are provided, coordinates of targets are ignored
 
+    - box_size_ra - box size in degrees of right ascension to search in
+    - box_size_de - box size in degrees of declination  to search in
+
+Lookup endpoint is ``/api/lookup`` and accepts ``POST`` method. An example of JSON acceptable by this endpoint is::
+
+    {
+        "dataset": "upjs",
+        "ra": 10,
+        "de": 15,
+        "box_size_ra": 30,
+        "box_size_de": 10
+    }
+
+or::
+
+    {
+        "dataset": "upjs",
+        "target": "bet_lyr",
+        "box_size_ra": 30,
+        "box_size_de": 10
+    }
+
+When any match is found, response looks similar to this one::
+
+    {}
