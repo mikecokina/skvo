@@ -382,3 +382,7 @@ def get_instrument_by_uuid(uuid):
 
 def get_target_by_catalogue_value(cat_val):
     return models.Target.objects.filter(catalogue_value=str(cat_val))
+
+
+def add_separation_to_samples_dict(samples_dict):
+    return samples_dict

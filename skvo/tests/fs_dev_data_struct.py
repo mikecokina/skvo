@@ -15,8 +15,8 @@ from datapipe.photometry.filesystem import parse_target_from_path
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s : [%(levelname)s] : %(name)s : %(message)s')
 logger = logging.getLogger(__name__)
 
-RAs = {"W_UMa": 9.43, "bet_Per": 3.08, "bet_Lyr": 18.5}
-DEs = {"W_UMa": 55.57, "bet_Per": 40.57, "bet_Lyr": 33.21}
+RAs = {"W_UMa": 145.93, "bet_Per": 40.95, "bet_Lyr": 282.51}
+DEs = {"W_UMa": 55.95, "bet_Per": 47.04, "bet_Lyr": 33.36}
 
 MOCK_DATA_LENGTH = 15
 DEFAULT_BASE_PATH = os.path.join(os.path.expanduser("~/"), "skvo_data")
