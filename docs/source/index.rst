@@ -387,7 +387,7 @@ When any match is found, response looks similar to this one::
 There is also a posibility to use method GET. In such case, it is necessary to distinguish if you want to use ``target``
 or coordinates. In case, you want to use target, then url is pecified as following::
 
-    /api/photometry/lookup/dataset/<dataset_value: string>/target/<target_value: string>/box_size_ra/<box_size_ra_value: float>/<box_size_de_value: float>/
+    /api/photometry/lookup/dataset/<dataset_value: string>/target/<target_value: string>/box_size_ra/<box_size_ra_value: float>/box_size_de/<box_size_de_value: float>/
 
 !!! do not forget trailing slash !!!
 
@@ -396,4 +396,4 @@ prefix in url like ``/dataset/`` or ``/box_size_ra/``.
 
 Similar behaviour is also in case if you want to use a coordinates instead of target. Then, url looks like this::
 
-    /api/photometry/lookup/dataset/<dataset_value: string>/ra/<ra_value: float>/de/<de_value: float>/box_size_ra/<box_size_ra_value: float>/<box_size_de_value: float>/
+    /api/photometry/lookup/dataset/<dataset_value: string>/ra/<ra_value: float>/de/<de_value: float>/box_size_ra/<box_size_ra_value: float>/box_size_de/<box_size_de_value: float>/
