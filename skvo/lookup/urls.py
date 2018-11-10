@@ -21,7 +21,4 @@ urlpatterns = [
         r'(?:/box_size_de/(?P<box_size_de>[0-9]+\.?[0-9]*))?'
         r'/$',
         PhotometryLookupGetView.as_view(), name="photometry-lookup-get-target"),
-
-    # re_path(r'^dataset/(?P<dataset>[0-9a-zA-Z]+)/target/(?P<target>[0-9a-zA-Z_\-]+)$',
-    #         LookupGetView.as_view(), name="vo-search-target"),
 ]

@@ -31,10 +31,10 @@ def _parse_lookup_request(data):
         kwargs = dict(
             dataset=data.get("dataset", None),
             target=data.get("target", None),
-            ra=data.get("ra", None),
-            de=data.get("de", None),
-            box_size_ra=data.get("box_size_ra", DEFAULT_BOX_SIZE_RA),
-            box_size_de=data.get("box_size_de", DEFAULT_BOX_SIZE_DE)
+            ra=float(data.get("ra")) if data.get("ra") else None,
+            de=float(data.get("de")) if data.get("ra") else None,
+            box_size_ra=float(data.get("box_size_ra")) if data.get("box_size_ra") else DEFAULT_BOX_SIZE_RA,
+            box_size_de=float(data.get("box_size_de")) if data.get("box_size_de") else DEFAULT_BOX_SIZE_DE
         )
 
         if not kwargs["target"] and (not kwargs["ra"] and not kwargs["de"]):
@@ -107,22 +107,36 @@ def get_targets_coordinates(validated_data):
         return float(coord.ra.deg), float(coord.dec.deg)
 
 
+def get_samples(validated_data):
+    observations = get_photometry_observation(validated_data)
+    metadata = get_observation_intervals(observations)
+    samples = read_tsdb.get_samples(tsdb_connector=TSDB_CONNECTOR, metadata=metadata, version=config.NUM_VERSION)
+    samples = transform.add_separation_to_samples_dict(samples)
+    return samples
+
+
 class PhotometryLookupPostView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = post.get_post_data(request)
             validated_data = _parse_lookup_request(data)
         except (KeyError, ValueError, LookupError) as e:
-            return HttpResponseBadRequest(content=str(e))
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
         validated_data["ra"], validated_data["de"] = get_targets_coordinates(validated_data)
-        observations = get_photometry_observation(validated_data)
-        metadata = get_observation_intervals(observations)
-        samples = read_tsdb.get_samples(tsdb_connector=TSDB_CONNECTOR, metadata=metadata, version=config.NUM_VERSION)
-        samples = transform.add_separation_to_samples_dict(samples)
+        samples = get_samples(validated_data)
         return Response(samples, status=status.HTTP_200_OK)
 
 
 class PhotometryLookupGetView(APIView):
     def get(self, request, *args, **kwargs):
-        return Response(dict(), status=200)
+        acceptable_params = ["dataset", "target", "ra", "de", "box_size_ra", "box_size_de"]
+        try:
+            data = {ap: kwargs.get(ap, None) for ap in acceptable_params}
+            validated_data = _parse_lookup_request(data)
+        except (KeyError, ValueError, LookupError) as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+
+        validated_data["ra"], validated_data["de"] = get_targets_coordinates(validated_data)
+        samples = get_samples(validated_data)
+        return Response(samples, status=status.HTTP_200_OK)
