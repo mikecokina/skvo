@@ -107,7 +107,7 @@ def get_targets_coordinates(validated_data):
         return float(coord.ra.deg), float(coord.dec.deg)
 
 
-class LookupPostView(APIView):
+class PhotometryLookupPostView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = post.get_post_data(request)
@@ -123,6 +123,6 @@ class LookupPostView(APIView):
         return Response(samples, status=status.HTTP_200_OK)
 
 
-class LookupGetView(APIView):
-    def get(self, request, **kwargs):
-        return Response("GET_OK", status=status.HTTP_200_OK)
+class PhotometryLookupGetView(APIView):
+    def get(self, request, *args, **kwargs):
+        return Response(dict(), status=200)

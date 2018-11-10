@@ -7,7 +7,7 @@ Behind the scene
 ~~~~~~~~~~~~~~~~
 
 Behind the scene of SKVO is hidden several different technologies that make it works.
-SKVO consist of the following main parts::
+SKVO consist of the following main parts:
     
     Ubuntu 16.04 server
     Python DJango server
@@ -37,7 +37,7 @@ The main reaseon to store those data is give information to user, where points i
 Metadata
 --------
 
-Example of metadata content is shown bellow::
+Example of metadata content is shown bellow:
 
     [
         {
@@ -94,7 +94,7 @@ Example of metadata content is shown bellow::
 
 
 Those data are stored in MySQL database in several differend tables linked to each other by ``foreign keys``.
-Each of the table is deffined by the following python classes as object realted object (ORM)::
+Each of the table is deffined by the following python classes as object realted object (ORM):
 
     Here ORM will come
 
@@ -125,7 +125,7 @@ to store information about and link infrmation to metadata stored in MySQL datab
 ``target_uid`` is a unique identfier for target object, ``bandpas_uid`` is a unique identifier for bandpass used during
 observation nad ``version`` represent our internal sign for version of data. A given metric also contain a couple of tags, and so
 ``instrument``, ``target``, ``source``, ``flux_calibration_level``, ``flux_calibration` and ``timeframe_reference_possition``
-[explanation will came later]. An exmaple of http import json for OpenTSDB API is following::
+[explanation will came later]. An exmaple of http import json for OpenTSDB API is following:
 
     [
         {
@@ -150,7 +150,7 @@ all other symbols to HEX code for given symbol with leading ``-``.
 
 **Magnitude error** for given timestamp and magnitude is stored in similar way as mmagnitude itself. We are using a metric
 **<target_uid>.<bandpass_uid>.error.photometry.<version>** with following OpenTSDB tags, and so ``instrument``, ``target`` and ``source``.
-An example of metricc json is::
+An example of metricc json is:
 
     [
         {
@@ -167,7 +167,7 @@ An example of metricc json is::
     ]
 
 **Exposure** is stored in the same way as magnitude error, just under different metric name, **<target_uid>.<bandpass_uid>.exposure.photometry.<version>**
-and example is bellow::
+and example is bellow:
 
     [
         {
@@ -195,7 +195,7 @@ from database working as a foreign key for relation database.
 Upload data flow
 ~~~~~~~~~~~~~~~~
 
-Expected data struncture on the local storage is like following::
+Expected data struncture on the local storage is like following:
 
     data
         `- source
@@ -214,7 +214,7 @@ Expected data struncture on the local storage is like following::
 
 Uploader script rely on mentioned data structure.
 ``data`` path on the top of sctruct tree is defined in ``skvo.ini`` configuration file as ``base_path``.
-Concrete structure should looks like following one::
+Concrete structure should looks like following one:
 
     data
         `- upjs
@@ -240,21 +240,21 @@ metadata and observation data tables are loaded as pandas dataframes.
 
 Here is an example of headers and data line from metadata table (<taget_uuid>_<YYYYMMDD>_meta.csv).
 
-Header::
+Header:
 
     arget.target,target.catalogue,target.catalogue_value,target.description,target.right_ascension,target.declination,target.target_class,bandpass.bandpass,bandpass.bandpass_uid,bandpass.spectral_band_type,bandpass.photometric_system,instrument.instrument,instrument.instrument_uid,instrument.telescope,instrument.camera,instrument.spectroscope,instrument.field_of_view,instrument.description,facility.facility,facility.facility_uid,facility.description,organisation.organisation,organisation.organisation_did,organisation.email,dataid.title,dataid.publisher,dataid.publisher_did,access.access
 
-Data::
+Data:
 
     bet_Lyr,default,bet_Lyr,bet_Lyr description,18.5,33.21,variable,band.johnson.u,johnson.u,optical,sys,instrument.uvw,instrument.uid.uvw,instrument.telescope.uvw,instrument.camera.uvw,instrument.spect.uvw,15,instrument.description,facility.in.upjs,uid.facility.upjs,facility.description.upjs,organisation.upjs,http://organisation.did.upjs,upjs@upjs.com,title.upjs,publisher.upjs,http://publisher_did.upjs,open
 
 Bellow is an example of header and data line of observation data table <taget_uuid>_<YYYYMMDD>_data.csv
 
-Header::
+Header:
 
     ts.timestamp,ts.magnitude,ts.magnitude_error,ts.flux_calibration,ts.flux_calibration_level,ts.exposure,ts.timeframe_reference_position
 
-Data::
+Data:
 
     2017-12-04 00:00:11,0.25,0.07692307692307693,abs,2,12,heliocenter
 
@@ -275,7 +275,7 @@ Basicaly, pandas dataframes are converted to the python list of dicts shown abov
     
 
 Finally, just media left. For given observation, each image file is read from local storage as raw object and with couple of
-additional metadta is serialized to the following schema::
+additional metadta is serialized to the following schema:
 
     {
         "content": <raw_image_content>,
@@ -290,7 +290,7 @@ additional metadta is serialized to the following schema::
 Raw content is GZIPed before operation of serialisation and md5 CRC sum is computet from gziped object. Such schema is converted to
 **avro** binary and this bytes like object is POSTed to endpoint ``/api/photometry/media`` where avro is decoded and file is stored.
 
-Serialized information are encoded to avro based on the following schema::
+Serialized information are encoded to avro based on the following schema:
 
     {
         "namespace": "skvo.types",
@@ -328,7 +328,7 @@ Serialized information are encoded to avro based on the following schema::
         ]
     }
 
-Local storage structure on the remote server is almost the same as on the storage data are coming from, and so::
+Local storage structure on the remote server is almost the same as on the storage data are coming from, and so:
 
     data
         `- source
@@ -360,7 +360,7 @@ SKVO providing an endpoint for searching observations defined by give combinatio
     - box_size_ra - box size in degrees of right ascension to search in
     - box_size_de - box size in degrees of declination  to search in
 
-Lookup endpoint is ``/api/lookup`` and accepts ``POST`` method. An example of JSON acceptable by this endpoint is::
+Lookup endpoint is ``/api/photometry/lookup/`` and accepts ``POST`` method. An example of JSON acceptable by this endpoint is:
 
     {
         "dataset": "upjs",
@@ -370,7 +370,7 @@ Lookup endpoint is ``/api/lookup`` and accepts ``POST`` method. An example of JS
         "box_size_de": 10
     }
 
-or::
+or:
 
     {
         "dataset": "upjs",
@@ -379,6 +379,21 @@ or::
         "box_size_de": 10
     }
 
-When any match is found, response looks similar to this one::
+When any match is found, response looks similar to this one:
 
     {}
+
+
+There is also a posibility to use method GET. In such case, it is necessary to distinguish if you want to use ``target``
+or coordinates. In case, you want to use target, then url is pecified as following:
+
+    /api/photometry/lookup/dataset/<dataset_value: string>/target/<target_value: string>/box_size_ra/<box_size_ra_value: float>/<box_size_de_value: float>/
+
+!!! do not forget trailing slash !!!
+
+Parmetre ``dataset``, ``box_size_ra`` and ``box_size_de`` are optional parameters and can be ommited. In such case, also get rid of
+prefix in url like ``/dataset/`` or ``/box_size_ra/``.
+
+Similar behaviour is also in case if you want to use a coordinates instead of target. Then, url looks like this:
+
+    /api/photometry/lookup/dataset/<dataset_value: string>/ra/<ra_value: float>/de/<de_value: float>/box_size_ra/<box_size_ra_value: float>/<box_size_de_value: float>/
