@@ -21,4 +21,7 @@ urlpatterns = [
         r'(?:/box_size_de/(?P<box_size_de>[0-9]+\.?[0-9]*))?'
         r'/$',
         PhotometryLookupGetView.as_view(), name="photometry-lookup-get-target"),
+
+    re_path(
+        r'^photometry/aref/$', PhotometryLookupGetView.as_view(), name="photometry-lookup-get-target"),
 ]

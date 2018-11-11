@@ -359,29 +359,66 @@ def sample_tsdb_response_to_df(tsdb_response):
 
 
 def samples_df_to_dict(df):
-    return [
-        {
-            "start_date": df["start_date"].iloc[i],
-            "end_date": df["end_date"].iloc[i],
-            "observation": {
-                "observation_id": df["observation_id"].iloc[i]
-            },
-            "instrument": dict(**model_to_dict(get_instrument_by_uuid(df["instrument_uuid"].iloc[i])[0])),
-            "source": df["source"].iloc[i],
-            "target": dict(**model_to_dict(get_target_by_catalogue_value(df["target"].iloc[i])[0])),
-            "bandpass": df["bandpass"].iloc[i],
-            "samples": df["samples"].iloc[i]
-        }
-        for i in range(len(df))
-    ]
+    ret_val = list()
+    for i in range(len(df)):
+        model = get_observation_by_id(uid=df["observation_id"].iloc[i])
+        ret_val.append(
+                {
+                    "start_date": df["start_date"].iloc[i],
+                    "end_date": df["end_date"].iloc[i],
+                    "observation": {
+                        "id": df["observation_id"].iloc[i]
+                    },
+                    "instrument": dict(
+                        **model_to_dict(model.instrument),
+                        instrument_uuid=df["instrument_uuid"].iloc[i]
+                    ),
+                    "dataid": dict(**model_to_dict(model.dataid)),
+                    "organisation": dict(**model_to_dict(model.dataid.organisation)),
+                    "facility": dict(**model_to_dict(model.facility)),
+                    "access_rights": dict(**model_to_dict(model.access)),
+                    "target": dict(**model_to_dict(model.target)),
+                    "bandpass": dict(**model_to_dict(get_bandpass_by_uid(uid=df["bandpass"].iloc[i]))),
+                    "samples": df["samples"].iloc[i],
+                }
+        )
+    return ret_val
+
+
+    # return [
+    #     {
+    #         "start_date": df["start_date"].iloc[i],
+    #         "end_date": df["end_date"].iloc[i],
+    #         "observation": {
+    #             "id": df["observation_id"].iloc[i]
+    #         },
+    #         "instrument": dict(
+    #             **model_to_dict(get_instrument_by_uuid(df["instrument_uuid"].iloc[i])),
+    #             instrument_uuid=df["instrument_uuid"].iloc[i]
+    #         ),
+    #         "source": df["source"].iloc[i],
+    #         "target": dict(**model_to_dict(get_target_by_catalogue_value(df["target"].iloc[i]))),
+    #         "bandpass": dict(**model_to_dict(get_bandpass_by_uid(uid=df["bandpass"].iloc[i]))),
+    #         "samples": df["samples"].iloc[i]
+    #     }
+    #     for i in range(len(df))
+    # ]
+
+
+def get_observation_by_id(uid):
+    return models.Observation.objects.filter(id=uid)[0]
+
+
+def get_bandpass_by_uid(uid):
+    return models.Bandpass.objects.filter(bandpass_uid=str(uid))[0]
 
 
 def get_instrument_by_uuid(uuid):
-    return models.Instrument.objects.filter(instrument_uuid=str(uuid))
+    return models.Instrument.objects.filter(instrument_uuid=str(uuid))[0]
 
 
 def get_target_by_catalogue_value(cat_val):
-    return models.Target.objects.filter(catalogue_value=str(cat_val))
+    return models.Target.objects.filter(catalogue_value=str(cat_val))[0]
 
 
 def add_separation_to_samples_dict(samples_dict):

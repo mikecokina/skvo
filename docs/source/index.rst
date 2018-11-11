@@ -381,7 +381,40 @@ or::
 
 When any match is found, response looks similar to this one::
 
-    {add response here}
+    [
+        {
+            "start_date": "2017-12-04T00:00:01Z",
+            "end_date": "2017-12-04T00:00:15Z",
+            "observation": {
+                "observation_id": 1
+            },
+            "instrument": {
+                "id": 1,
+                "instrument": "instrument.uvw",
+                "telescope": "instrument.telescope.uvw",
+                "camera": "instrument.camera.uvw",
+                "spectroscope": "instrument.spect.uvw",
+                "field_of_view": 10.0,
+                "description": "instrument.description",
+                "instrument_uuid": "74e8003a-ed91-4403-863f-ff4ba36f8078"
+            },
+            "source": "upjs",
+            "target": {
+                "id": 1,
+                "target": "bet_Lyr",
+                "catalogue": "default",
+                "catalogue_value": "bet_Lyr",
+                "description": "bet_Lyr description",
+                "right_ascension": 282.51,
+                "declination": 33.36,
+                "equinox": "J2000",
+                "target_class": "variable"
+            },
+            "bandpass": "johnson.u",
+            "samples": 14
+        },
+        ...
+    ]
 
 
 There is also a posibility to use method GET. In such case, it is necessary to distinguish if you want to use ``target``

@@ -2,7 +2,6 @@ import logging
 
 from astropy.coordinates import SkyCoord as skycoord
 from django.db.models import Q
-from django.http import HttpResponseBadRequest
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -140,3 +139,33 @@ class PhotometryLookupGetView(APIView):
         validated_data["ra"], validated_data["de"] = get_targets_coordinates(validated_data)
         samples = get_samples(validated_data)
         return Response(samples, status=status.HTTP_200_OK)
+
+
+class PhotometryARef(APIView):
+    def post(self, request, *args, **kwargs):
+        validated_data = {
+            "start_date": "2017-12-04 00:00:01",
+            "end_date": "2017-12-04 00:00:15",
+            "observation": {
+                "observation_id": 1
+            },
+            "instrument": {
+                "instrument_uuid": "74e8003a-ed91-4403-863f-ff4ba36f8078"
+            },
+            "target": {
+                "id": 1,
+                "catalogue_value": "bet_Lyr"
+            },
+            "bandpass": {
+                "bandpass_uuid": "johnson.u",
+            },
+            "source": "upjs",
+
+        }
+        pass
+
+
+
+
+
+

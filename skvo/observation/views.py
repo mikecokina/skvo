@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from utils import utils
 from skvo import settings
 from uuid import uuid4
+from rest_framework import status
 
 from datapipe.photometry import transform
 from datapipe.photometry import filesystem
@@ -95,4 +96,7 @@ class PhotometryMedia(APIView):
             logger.error("{}".format(str(e)))
             return Response(dict(msg=str(e)), status=500)
         return Response(dict(msg="created"), status=201)
+
+    def get(self, request, *args, **kwargs):
+        return Response(dict(msg="Not implemented, yet"), status=status.HTTP_200_OK)
 
