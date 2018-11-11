@@ -386,7 +386,7 @@ When any match is found, response looks similar to this one::
             "start_date": "2017-12-04T00:00:01Z",
             "end_date": "2017-12-04T00:00:15Z",
             "observation": {
-                "observation_id": 1
+                "id": 1
             },
             "instrument": {
                 "id": 1,
@@ -398,7 +398,30 @@ When any match is found, response looks similar to this one::
                 "description": "instrument.description",
                 "instrument_uuid": "74e8003a-ed91-4403-863f-ff4ba36f8078"
             },
-            "source": "upjs",
+            "dataid": {
+                "id": 1,
+                "source": "upjs",
+                "title": "title.upjs",
+                "publisher": "publisher.upjs",
+                "publisher_did": "http://publisher_did.upjs",
+                "organisation": 1
+            },
+            "organisation": {
+                "id": 1,
+                "organisation": "organisation.upjs",
+                "organisation_did": "http://organisation.did.upjs",
+                "email": "upjs@upjs.com"
+            },
+            "facility": {
+                "id": 1,
+                "facility": "facility.in.upjs",
+                "facility_uid": "uid.facility.upjs",
+                "description": "facility.description.upjs"
+            },
+            "access_rights": {
+                "id": 1,
+                "access": "open"
+            },
             "target": {
                 "id": 1,
                 "target": "bet_Lyr",
@@ -410,7 +433,13 @@ When any match is found, response looks similar to this one::
                 "equinox": "J2000",
                 "target_class": "variable"
             },
-            "bandpass": "johnson.u",
+            "bandpass": {
+                "id": 1,
+                "bandpass": "band.johnson.u",
+                "bandpass_uid": "johnson.u",
+                "spectral_band_type": "optical",
+                "photometric_system": "sys"
+            },
             "samples": 14
         },
         ...
