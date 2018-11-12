@@ -5,6 +5,7 @@ import os
 import json
 import logging
 import warnings
+import pytz
 
 
 parser = ConfigParser()
@@ -91,5 +92,7 @@ OPENTSDB_QUERY = dict(
     timezone='UTC',
     use_calendar=False,
 )
+
+UTC_TIMEZONE = pytz.timezone("UTC")
 
 update()
