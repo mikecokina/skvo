@@ -1,12 +1,12 @@
+import os
 import argparse
 import datetime
 import logging
-import os
 from queue import Queue
 from threading import Thread
 
 from utils import utils
-from conf import config
+from conf import config as gconf
 from datapipe.importers import MetadataHttpImporter, OpenTsdbHttpImporter, MediaHttpImporter
 from datapipe.photometry import filesystem as fs
 from datapipe.photometry import read
@@ -84,7 +84,7 @@ class MetadataProcessor(object):
 
 class DataProcessor(object):
     def __init__(self):
-        self._importer = OpenTsdbHttpImporter(server=config.OPENTSDB_SERVER, batch_size=config.OPENTSDB_BATCH_SIZE)
+        self._importer = OpenTsdbHttpImporter(server=gconf.OPENTSDB_SERVER, batch_size=gconf.OPENTSDB_BATCH_SIZE)
         self._logger = logging.getLogger(DataProcessor.__name__)
 
     @staticmethod
@@ -148,14 +148,14 @@ class PhotometryProcessor(object):
         self._data_processor = DataProcessor()
         self._media_processor = MediaProessor()
         self._logger = logging.getLogger(PhotometryProcessor.__name__)
-        self._sources = fs.get_sources(config.BASE_PATH)
-        self._data_locations = fs.get_data_locations(config.BASE_PATH, self._sources)
+        self._sources = fs.get_sources(gconf.BASE_PATH)
+        self._data_locations = fs.get_data_locations(gconf.BASE_PATH, self._sources)
 
     def process(self):
         for source, dtables_paths in self._data_locations.items():
             self._logger.info("Processing source: {}".format(source))
             for dtables_path in dtables_paths:
-                full_dtables_path = fs.normalize_path(os.path.join(config.BASE_PATH, dtables_path))
+                full_dtables_path = fs.normalize_path(os.path.join(gconf.BASE_PATH, dtables_path))
                 bandpass_fs_uid = fs.parse_bandpass_uid_from_path(dtables_path)
                 target_fs_uid = fs.parse_target_from_path(dtables_path)
                 full_media_path = fs.get_corresponding_media_path(full_dtables_path)
@@ -176,7 +176,7 @@ class PhotometryProcessor(object):
 
 
 def run():
-    config.set_up_logging()
+    gconf.set_up_logging()
     logger = logging.getLogger('photometry-uploader')
     logger.info("running photometry uploader")
     processor = PhotometryProcessor()
@@ -198,16 +198,16 @@ def main():
     args = parser.parse_args()
 
     if args.config:
-        config.read_and_update_config(args.config)
+        gconf.read_and_update_config(args.config)
 
-    config.CONFIG_FILE = args.config or config.CONFIG_FILE
-    config.LOG_CONFIG = args.log or config.LOG_CONFIG
+    gconf.CONFIG_FILE = args.config or gconf.CONFIG_FILE
+    gconf.LOG_CONFIG = args.log or gconf.LOG_CONFIG
 
-    config.OPENTSDB_SERVER = args.tsdb_server or config.OPENTSDB_SERVER
-    config.OPENTSDB_BATCH_SIZE = args.tsdb_batch_size or config.OPENTSDB_BATCH_SIZE
+    gconf.OPENTSDB_SERVER = args.tsdb_server or gconf.OPENTSDB_SERVER
+    gconf.OPENTSDB_BATCH_SIZE = args.tsdb_batch_size or gconf.OPENTSDB_BATCH_SIZE
 
-    config.BASE_PATH = args.base_path or config.BASE_PATH
-    config.set_up_logging()
+    gconf.BASE_PATH = args.base_path or gconf.BASE_PATH
+    gconf.set_up_logging()
 
     run()
 

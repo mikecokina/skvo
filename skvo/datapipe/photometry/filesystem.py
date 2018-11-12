@@ -2,11 +2,11 @@ import os
 import datetime
 import re
 
-from conf import config
+from conf import config as gconf
 
 
 def get_base_path(base_path):
-    return base_path if base_path is not None else config.BASE_PATH
+    return base_path if base_path is not None else gconf.BASE_PATH
 
 
 def get_sources(base_path=None):
@@ -34,7 +34,7 @@ def get_data_locations(base_path=None, source=None):
     data_tree = {_source: list() for _source in source}
 
     for _source in source:
-        tree = os.walk(os.path.join(base_path, _source, config.DTYPES_BASE_DIR["photometry"]))
+        tree = os.walk(os.path.join(base_path, _source, gconf.DTYPES_BASE_DIR["photometry"]))
         for path, dirs, _ in tree:
             if len(dirs) == 0 and "media" not in path:
                 data_tree[_source].append(path)
@@ -126,7 +126,7 @@ def get_media_path_from_metadata(target, base_path, source, bandpass, start_date
     target_date_dir = "{}_{}" \
                       "".format(target, datetime.datetime.strftime(start_date, "%Y%m%d"))
     return os.path.join(
-        base_path, source, config.DTYPES_BASE_DIR["photometry"], "media", date_dir, target_date_dir,
+        base_path, source, gconf.DTYPES_BASE_DIR["photometry"], "media", date_dir, target_date_dir,
         bandpass
     )
 
