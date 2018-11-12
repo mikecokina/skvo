@@ -74,7 +74,7 @@ class MetadataHttpImporter(AbstractHttpImporter):
 
     @property
     def api_endpoint(self):
-        return "{}/api/photometry/metadata".format(self._server)
+        return "{}/api/photometry/metadata/".format(self._server)
 
     def imp(self, json_data):
         headers = {
@@ -97,7 +97,7 @@ class MediaHttpImporter(AbstractHttpImporter):
 
     @property
     def api_endpoint(self):
-        return "{}/api/photometry/media".format(self._server)
+        return "{}/api/photometry/media/".format(self._server)
 
     def imp(self, raw_data, filename):
         headers = {
