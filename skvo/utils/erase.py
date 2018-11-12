@@ -1,12 +1,12 @@
 from utils import tsdb_eraser
 
 from datetime import datetime
-from conf import config
+from conf import config as gconf
 import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s : [%(levelname)s] : %(name)s : %(message)s')
 
-config.OPENTSDB_SERVER = "http://192.168.56.102:4242"
+gconf.OPENTSDB_SERVER = "http://192.168.56.102:4242"
 
 start_date = datetime(2010, 1, 1)
 end_date = datetime.now()

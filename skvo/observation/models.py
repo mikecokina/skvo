@@ -105,3 +105,24 @@ class Spectroscopy(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     created = models.DateTimeField(auto_now_add=True)
+
+
+def get_photometry_timerange_by_observation_id(id):
+    model = Photometry.objects.filter(observation=id)[0]
+    return model.start_date, model.end_date
+
+
+def get_observation_by_id(uid):
+    return Observation.objects.filter(id=uid)[0]
+
+
+def get_bandpass_by_uid(uid):
+    return Bandpass.objects.filter(bandpass_uid=str(uid))[0]
+
+
+def get_instrument_by_uuid(uuid):
+    return Instrument.objects.filter(instrument_uuid=str(uuid))[0]
+
+
+def get_target_by_catalogue_value(cat_val):
+    return Target.objects.filter(catalogue_value=str(cat_val))[0]

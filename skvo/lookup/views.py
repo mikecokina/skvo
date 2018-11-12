@@ -6,9 +6,11 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from datapipe.photometry import config
+from conf import config as gconf
+from datapipe.photometry import config as pconf
 from datapipe.photometry import read_tsdb
 from datapipe.photometry import transform
+from observation import models
 from observation.models import Photometry
 from skvo.settings import TSDB_CONNECTOR
 from utils import post
@@ -62,8 +64,8 @@ def prepare_photometry_model_filter_clause(validated_data):
         filters.update(
             dict(
                 query_like=
-                lambda: Q(observation__target__right_ascension__gte=size_ra_bottom) |
-                Q(observation__target__right_ascension__gte=size_ra_bottom) &
+                lambda: (Q(observation__target__right_ascension__gte=size_ra_bottom) |
+                Q(observation__target__right_ascension__lte=size_ra_top)) &
                 Q(observation__target__right_ascension__gte=0)
             )
         )
@@ -108,10 +110,12 @@ def get_targets_coordinates(validated_data):
 
 def get_samples(validated_data):
     observations = get_photometry_observation(validated_data)
-    metadata = get_observation_intervals(observations)
-    samples = read_tsdb.get_samples(tsdb_connector=TSDB_CONNECTOR, metadata=metadata, version=config.NUM_VERSION)
-    samples = transform.add_separation_to_samples_dict(samples)
-    return samples
+    if observations:
+        metadata = get_observation_intervals(observations)
+        samples = read_tsdb.get_samples(tsdb_connector=TSDB_CONNECTOR, metadata=metadata, version=pconf.NUM_VERSION)
+        samples = transform.add_separation_to_samples_dict(samples)
+        return samples
+    return dict()
 
 
 class PhotometryLookupPostView(APIView):
@@ -142,27 +146,54 @@ class PhotometryLookupGetView(APIView):
 
 
 class PhotometryARef(APIView):
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        import datetime
+
         validated_data = {
-            "start_date": "2017-12-04 00:00:01",
-            "end_date": "2017-12-04 00:00:15",
+            "start_date": datetime.datetime.strptime("2017-12-04 00:00:01", "%Y-%m-%d %H:%M:%S"),
+            "end_date": datetime.datetime.strptime("2017-12-04 00:00:15", "%Y-%m-%d %H:%M:%S"),
             "observation": {
-                "observation_id": 1
+                "id": 1
             },
             "instrument": {
-                "instrument_uuid": "74e8003a-ed91-4403-863f-ff4ba36f8078"
+                "instrument_uuid": "b58d00ba-8435-4872-a8fd-595166774846"
             },
             "target": {
                 "id": 1,
                 "catalogue_value": "bet_Lyr"
             },
             "bandpass": {
-                "bandpass_uuid": "johnson.u",
+                "bandpass_uid": "johnson.u",
             },
-            "source": "upjs",
-
+            "dataid": {
+                "source": "upjs"
+            }
         }
-        pass
+
+        observation_model = models.get_observation_by_id(uid=validated_data["observation"]["id"])
+        access = str(observation_model.access.access).lower()
+        sdate, edate = models.get_photometry_timerange_by_observation_id(validated_data["observation"]["id"])
+
+        # after debug, move this to validation
+        validated_data["start_date"] = gconf.UTC_TIMEZONE.localize(validated_data["start_date"])
+        validated_data["end_date"] = gconf.UTC_TIMEZONE.localize(validated_data["end_date"])
+
+        # in case, user is requesting bigger timerange, cut it out
+        validated_data["start_date"] = sdate if validated_data["start_date"] < sdate else validated_data["start_date"]
+        validated_data["end_date"] = edate if validated_data["end_date"] > edate else validated_data["end_date"]
+
+        if access in ["open"]:
+            data = read_tsdb.get_data(TSDB_CONNECTOR,
+                                      target=str(validated_data["target"]["catalogue_value"]),
+                                      instrument_uuid=str(validated_data["instrument"]["instrument_uuid"]),
+                                      bandpass_uuid=str(validated_data["bandpass"]["bandpass_uid"]),
+                                      source=str(validated_data["dataid"]["source"]),
+                                      observation_id=int(validated_data["observation"]["id"]),
+                                      start_date=validated_data["start_date"],
+                                      end_date=validated_data["end_date"],
+                                      version=pconf.NUM_VERSION)
+            return Response("OK")
+        return Response("We don't do that here")
 
 
 

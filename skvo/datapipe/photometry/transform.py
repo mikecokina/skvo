@@ -353,7 +353,7 @@ def add_separation_to_samples_dict(samples_dict):
 def merge_observation_data(df1, df2):
     (left, right) = (df1, df2) if len(df1) < len(df2) else (df2, df1)
     return pd.merge(
-        left, right, how='left', left_on=['timestamp', 'TAG_NAME'], right_on=['timestamp', 'TAG_NAME']
+        left, right, how='left', left_on=['timestamp'], right_on=['timestamp']
     )
 
 
@@ -417,6 +417,3 @@ def data_tsdb_reposne_to_df(tsdb_response):
     for _df in dfs:
         df = merge_observation_data(_df, df)
     return df
-
-
-
