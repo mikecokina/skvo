@@ -65,7 +65,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'observation.apps.ObservationConfig'
+    'observation.apps.ObservationConfig',
+    'lookup.apps.LookupConfig',
+    'datapipe.apps.DatapipeConfig'
 ]
 
 MIDDLEWARE = [
@@ -118,6 +120,7 @@ DATABASES = {
         'PORT': config.get('database', 'port'),
         'PASSWORD': config.get('database', 'password'),
         'DEFAULT_CHARSET': config.get('database', 'default_character_set'),
+        'TIME_ZONE': "UTC",
         'OPTIONS': {
             'init_command': 'SET default_storage_engine=INNODB',
         },
