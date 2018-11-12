@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from django.urls import re_path
 
-from lookup.views import PhotometryLookupPostView, PhotometryLookupGetView
+from lookup.views import PhotometryLookupPostView, PhotometryLookupGetView, PhotometryARef
 
 urlpatterns = [
     url(r'^photometry/lookup/$', PhotometryLookupPostView.as_view(), name="photometry-lookup-post"),
@@ -23,5 +23,5 @@ urlpatterns = [
         PhotometryLookupGetView.as_view(), name="photometry-lookup-get-target"),
 
     re_path(
-        r'^photometry/aref/$', PhotometryLookupGetView.as_view(), name="photometry-lookup-get-target"),
+        r'^photometry/aref/$', PhotometryARef.as_view(), name="photometry-aref"),
 ]
