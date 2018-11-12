@@ -78,7 +78,7 @@ Example of metadata content is shown bellow::
                     "publisher": "data_id_publisher",
                     "publisher_did": "http://data_id_publisher"
                 },
-                "observation_hash": 4573a65f66e66aa685
+                "observation_hash": 4573a65f66e66aa685436476545675675634654654
             },
             "bandpass": {
                 "bandpass": "bandpass_name",
@@ -124,7 +124,7 @@ to store information about and link infrmation to metadata stored in MySQL datab
 **Magnitude** for given target object is stored in metric **<target_uid>.<bandpass_uid>.photometry.<version>**, where
 ``target_uid`` is a unique identfier for target object, ``bandpas_uid`` is a unique identifier for bandpass used during
 observation nad ``version`` represent our internal sign for version of data. A given metric also contain a couple of tags, and so
-``instrument``, ``target``, ``source``, ``flux_calibration_level``, ``flux_calibration` and ``timeframe_reference_possition``
+``instrument``, ``target``, ``source``, ``flux_calibration_level``, ``flux_calibration` and ``timeframe_reference_position``
 [explanation will came later]. An exmaple of http import json for OpenTSDB API is following::
 
     [
@@ -139,7 +139,7 @@ observation nad ``version`` represent our internal sign for version of data. A g
                     'source': upjs,
                     'flux_calibration_level': 1,
                     'flux_calibration': abs,
-                    "timeframe_reference_possition": barycenter
+                    "timeframe_reference_position": barycenter
                 }
         }
     ]

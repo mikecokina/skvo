@@ -1,32 +1,20 @@
 import datetime
 import io
+import itertools
 import json
 import os
+import pandas as pd
 
 import avro
 import requests
 from avro.io import DatumWriter
-from django.forms import model_to_dict
 
 from conf import config
+from datapipe import utils as dputils
 from datapipe.photometry import config as photometry_config, filesystem
 from utils import time_utils
 from utils import utils
-from datapipe import utils as dputils
-from utils.special_characters import special_characters_encode
-from observation import models
-
-
-def prepare_message():
-    pass
-
-
-def get_photometry_loader(transform=None, init_sink=None):
-    def load_photometry(start_date=None, end_date=None, **kwargs):
-        sink = init_sink(**kwargs)
-        sink()
-
-    return load_photometry
+from utils.special_characters import special_characters_encode, special_characters_decode
 
 
 def join_photometry_data(data, metadata):
@@ -86,11 +74,11 @@ def df_to_timeseries_tsdb_metrics(df, source):
             'tags':
                 {
                     'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
-                    'target': str(df["target.target"].iloc[0]),
+                    'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'flux_calibration_level': int(df["ts.flux_calibration_level"].iloc[i]),
                     'flux_calibration': str(df["ts.flux_calibration"].iloc[i]),
-                    'timeframe_reference_possition': str(df["ts.timeframe_reference_position"].iloc[i]),
+                    'timeframe_reference_position': str(df["ts.timeframe_reference_position"].iloc[i]),
                     'dtype': 'observation'
                 }
         }
@@ -109,7 +97,7 @@ def observation_id_data_df_to_tsdb_metrics(df, source, observation_id):
             'tags':
                 {
                     'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
-                    'target': str(df["target.target"].iloc[0]),
+                    'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'dtype': 'oid'
                 }
@@ -129,7 +117,7 @@ def df_to_exposure_tsdb_metrics(df, source):
             'tags':
                 {
                     'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
-                    'target': str(df["target.target"].iloc[0]),
+                    'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'dtype': 'exposure'
 
@@ -150,7 +138,7 @@ def df_to_errors_tsdb_metrics(df, source):
             'tags':
                 {
                     'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
-                    'target': str(df["target.target"].iloc[0]),
+                    'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'dtype': 'error'
                 }
@@ -358,68 +346,77 @@ def sample_tsdb_response_to_df(tsdb_response):
     ]
 
 
-def samples_df_to_dict(df):
-    ret_val = list()
-    for i in range(len(df)):
-        model = get_observation_by_id(uid=df["observation_id"].iloc[i])
-        ret_val.append(
-                {
-                    "start_date": df["start_date"].iloc[i],
-                    "end_date": df["end_date"].iloc[i],
-                    "observation": {
-                        "id": df["observation_id"].iloc[i]
-                    },
-                    "instrument": dict(
-                        **model_to_dict(model.instrument),
-                        instrument_uuid=df["instrument_uuid"].iloc[i]
-                    ),
-                    "dataid": dict(**model_to_dict(model.dataid)),
-                    "organisation": dict(**model_to_dict(model.dataid.organisation)),
-                    "facility": dict(**model_to_dict(model.facility)),
-                    "access_rights": dict(**model_to_dict(model.access)),
-                    "target": dict(**model_to_dict(model.target)),
-                    "bandpass": dict(**model_to_dict(get_bandpass_by_uid(uid=df["bandpass"].iloc[i]))),
-                    "samples": df["samples"].iloc[i],
-                }
-        )
-    return ret_val
-
-
-    # return [
-    #     {
-    #         "start_date": df["start_date"].iloc[i],
-    #         "end_date": df["end_date"].iloc[i],
-    #         "observation": {
-    #             "id": df["observation_id"].iloc[i]
-    #         },
-    #         "instrument": dict(
-    #             **model_to_dict(get_instrument_by_uuid(df["instrument_uuid"].iloc[i])),
-    #             instrument_uuid=df["instrument_uuid"].iloc[i]
-    #         ),
-    #         "source": df["source"].iloc[i],
-    #         "target": dict(**model_to_dict(get_target_by_catalogue_value(df["target"].iloc[i]))),
-    #         "bandpass": dict(**model_to_dict(get_bandpass_by_uid(uid=df["bandpass"].iloc[i]))),
-    #         "samples": df["samples"].iloc[i]
-    #     }
-    #     for i in range(len(df))
-    # ]
-
-
-def get_observation_by_id(uid):
-    return models.Observation.objects.filter(id=uid)[0]
-
-
-def get_bandpass_by_uid(uid):
-    return models.Bandpass.objects.filter(bandpass_uid=str(uid))[0]
-
-
-def get_instrument_by_uuid(uuid):
-    return models.Instrument.objects.filter(instrument_uuid=str(uuid))[0]
-
-
-def get_target_by_catalogue_value(cat_val):
-    return models.Target.objects.filter(catalogue_value=str(cat_val))[0]
-
-
 def add_separation_to_samples_dict(samples_dict):
     return samples_dict
+
+
+def merge_observation_data(df1, df2):
+    (left, right) = (df1, df2) if len(df1) < len(df2) else (df2, df1)
+    return pd.merge(
+        left, right, how='left', left_on=['timestamp', 'TAG_NAME'], right_on=['timestamp', 'TAG_NAME']
+    )
+
+
+def extract_observation_data(group):
+    df = pd.DataFrame({"timestamp": list(group[0]["dps"].keys()),
+                       "magnitude": list(group[0]["dps"].values())})
+
+    df["timeframe_reference_position"] = group[0]["tags"]["timeframe_reference_position"]
+    df["instrument"] = group[0]["tags"]["instrument"]
+    df["source"] = group[0]["tags"]["source"]
+    df["target"] = special_characters_decode(group[0]["tags"]["target"])
+    df["flux_calibration"] = special_characters_decode(group[0]["tags"]["flux_calibration"])
+    df["flux_calibration_level"] = special_characters_decode(group[0]["tags"]["flux_calibration_level"])
+    df["bandpass"] = special_characters_decode(dputils.parse_bandpass_from_metric(group[0]["metric"]))
+
+    df = df.sort_values("timestamp")
+    return df
+
+
+def extract_oid(group):
+    df = pd.DataFrame({"timestamp": list(group[0]["dps"].keys()),
+                       "observation_id": list(group[0]["dps"].values())})
+    df = df.sort_values("timestamp")
+    return df
+
+
+def extract_error(group):
+    df = pd.DataFrame({"timestamp": list(group[0]["dps"].keys()),
+                       "error": list(group[0]["dps"].values())})
+    df = df.sort_values("timestamp")
+    return df
+
+
+def extract_exposure(group):
+    df = pd.DataFrame({"timestamp": list(group[0]["dps"].keys()),
+                       "exposure": list(group[0]["dps"].values()),
+                       })
+    df = df.sort_values("timestamp")
+    return df
+
+
+def data_tsdb_reposne_to_df(tsdb_response):
+    repository_groups = {key: list(group)
+                         for key, group in itertools.groupby(tsdb_response, key=lambda x: x['metric'])}
+
+    df = pd.DataFrame(columns=["timestamp"])
+
+    oid_key = utils.find_key(repository_groups.keys(), ".oid.")
+    oid_data = extract_oid(repository_groups.pop(oid_key))
+
+    error_key = utils.find_key(repository_groups.keys(), ".error.")
+    error_data = extract_error(repository_groups.pop(error_key))
+
+    exposure_key = utils.find_key(repository_groups.keys(), ".exposure.")
+    exposure_data = extract_exposure(repository_groups.pop(exposure_key))
+
+    data = extract_observation_data(repository_groups.pop(list(repository_groups.keys())[0]))
+
+    dfs = [oid_data, exposure_data, error_data, data]
+
+    for _df in dfs:
+        df = merge_observation_data(_df, df)
+    return df
+
+
+
