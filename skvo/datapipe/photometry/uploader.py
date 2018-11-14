@@ -76,10 +76,10 @@ class MetadataProcessor(object):
         metadata_json = transform.photometry_data_to_metadata_json(metadata, data, source)
         metadata_import_response = self._importer.imp(metadata_json)
         observation_id = transform.get_response_observation_id(metadata_import_response)
-        instrument_uuid = transform.get_response_instrument_uuid(metadata_import_response)
+        instrument_hash = transform.get_response_instrument_hash(metadata_import_response)
 
         self._logger.info("Exiting metadata processor")
-        return observation_id, instrument_uuid
+        return observation_id, instrument_hash
 
 
 class DataProcessor(object):
@@ -169,8 +169,8 @@ class PhotometryProcessor(object):
 
                 metadata = self._metadata_proessor.get_metadata(full_dtables_path, metatable_name)
                 data = self._data_processor.get_data(full_dtables_path, dtable_name)
-                oid, iuuid = self._metadata_proessor.process(metadata, data, source)
-                metadata = transform.expand_metadata_with_instrument_uuid(metadata, iuuid)
+                oid, ihash = self._metadata_proessor.process(metadata, data, source)
+                metadata = transform.expand_metadata_with_instrument_hash(metadata, ihash)
                 self._data_processor.process(metadata, data, source, oid)
                 self._media_processor.process(full_media_path, metadata, data, source)
 

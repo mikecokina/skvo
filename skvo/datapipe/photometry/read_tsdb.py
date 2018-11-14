@@ -35,7 +35,7 @@ def get_exposure(version):
     check_version(version)
 
 
-def get_data(tsdb_connector: tsdb.TsdbConnector, target: str, instrument_uuid: str, bandpass_uuid: str,
+def get_data(tsdb_connector: tsdb.TsdbConnector, target: str, instrument_hash: str, bandpass_uid: str,
              source: str, observation_id: int, start_date: datetime, end_date: datetime,
              max_tsdb_subqueries: int = 10, version: float = None):
     check_version(version)
@@ -58,7 +58,7 @@ def get_data(tsdb_connector: tsdb.TsdbConnector, target: str, instrument_uuid: s
                         {
                             "type": "literal_or",
                             "tagk": "instrument",
-                            "filter": str(instrument_uuid),
+                            "filter": str(instrument_hash),
                             "groupBy": False
                         },
                         {
@@ -83,8 +83,8 @@ def get_data(tsdb_connector: tsdb.TsdbConnector, target: str, instrument_uuid: s
             queries.append(query_dict)
         return queries
 
-    regexp = '([a-zA-Z0-9\-])\.{dtype}(.*)\.v{version}$'.format(dtype=dtype, version=version)
-    q = "{}.{}".format(special_characters_encode(target), special_characters_encode(bandpass_uuid))
+    regexp = '([a-zA-Z0-9\-])\.{dtype}(.*)\.{version}$'.format(dtype=dtype, version=version)
+    q = "{}.{}".format(special_characters_encode(target), special_characters_encode(bandpass_uid))
     suggested_metrics = sorted(tsdb_connector.metrics(q=q, regexp=regexp, max=10000))
 
     query_kwargs = gconf.OPENTSDB_QUERY.copy()
@@ -93,6 +93,7 @@ def get_data(tsdb_connector: tsdb.TsdbConnector, target: str, instrument_uuid: s
 
     tsdb_response = tsdb_connector.multiquery(query_chunks)
     df = ptransform.data_tsdb_reposne_to_df(tsdb_response) if tsdb_response else pd.DataFrame()
+    pass
 
     # logger.info(query_chunks)
 
@@ -118,7 +119,7 @@ def get_samples(tsdb_connector: tsdb.TsdbConnector, metadata: list, version: flo
                 filters=[
                     {
                         "type": "literal_or",
-                        "filter": str(meta["instrument_uuid"]),
+                        "filter": str(meta["instrument_hash"]),
                         "tagk": "instrument",
                         "groupBy": True
                     },
@@ -152,19 +153,19 @@ def get_samples(tsdb_connector: tsdb.TsdbConnector, metadata: list, version: flo
     samples_info_df = pd.DataFrame.from_dict(samples_info)
     samples_info_df["start_date"] = tu.unix_timestamp_to_pd(samples_info_df["start_date"], unit="ms")
     samples_info_df["start_date"] = tu.add_timezone_to_pd_series(samples_info_df["start_date"], 'UTC')
-    samples_info_df["instrument_uuid"] = samples_info_df["instrument_uuid"].astype(str)
+    samples_info_df["instrument_hash"] = samples_info_df["instrument_hash"].astype(str)
     samples_info_df["target"] = samples_info_df["target"].astype(str)
     samples_info_df["source"] = samples_info_df["source"].astype(str)
     samples_info_df["bandpass"] = samples_info_df["bandpass"].astype(str)
 
     metadata_df = pd.DataFrame.from_dict(metadata)
-    metadata_df["instrument_uuid"] = metadata_df["instrument_uuid"].astype(str)
+    metadata_df["instrument_hash"] = metadata_df["instrument_hash"].astype(str)
     metadata_df["target"] = metadata_df["target"].astype(str)
     metadata_df["source"] = metadata_df["source"].astype(str)
     metadata_df["bandpass"] = metadata_df["bandpass"].astype(str)
 
     samples_df = pd.merge(samples_info_df, metadata_df, how="outer",
-                          left_on=["start_date", "instrument_uuid", "target", "source", "bandpass"],
-                          right_on=["start_date", "instrument_uuid", "target", "source", "bandpass"])
+                          left_on=["start_date", "instrument_hash", "target", "source", "bandpass"],
+                          right_on=["start_date", "instrument_hash", "target", "source", "bandpass"])
     samples = mdptransform.photometry_samples_df_to_dict(samples_df)
     return samples

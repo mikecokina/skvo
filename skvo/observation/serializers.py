@@ -6,6 +6,13 @@ from rest_framework import serializers, validators
 
 from observation import models
 
+from django.core.exceptions import ValidationError
+
+
+def validate_not_empty(value):
+    if len(str(value)) == 0:
+        raise ValidationError("hash cannot be an empty string", params={'value': value})
+
 
 class CustomModelSerializer(serializers.ModelSerializer):
     def run_validators(self, value):
@@ -27,7 +34,7 @@ class BandpassSerializer(CustomModelSerializer):
         exclude = ('created', )
         extra_kwargs = {
             'bandpass_uid': {
-                'validators': [],
+                'validators': [validate_not_empty],
             }
         }
 
@@ -37,8 +44,8 @@ class InstrumentSerializer(CustomModelSerializer):
         model = models.Instrument
         exclude = ('created', )
         extra_kwargs = {
-            'instrument_uid': {
-                'validators': [],
+            'instrument_hash': {
+                'validators': [validate_not_empty],
             }
         }
 
@@ -49,7 +56,7 @@ class FacilitySerializer(CustomModelSerializer):
         exclude = ('created', )
         extra_kwargs = {
             'facility_uid': {
-                'validators': [],
+                'validators': [validate_not_empty],
             }
         }
 
@@ -60,7 +67,7 @@ class OrganisationSerializer(CustomModelSerializer):
         exclude = ('created', )
         extra_kwargs = {
             'organisation_did': {
-                'validators': [],
+                'validators': [validate_not_empty],
             }
         }
 
@@ -71,7 +78,7 @@ class AccessRightsSerializer(CustomModelSerializer):
         exclude = ('created',)
         extra_kwargs = {
             'access': {
-                'validators': [],
+                'validators': [validate_not_empty],
             }
         }
 
@@ -96,7 +103,7 @@ class ObservationSerializer(CustomModelSerializer):
         exclude = ('created', )
         extra_kwargs = {
             'observation_hash': {
-                'validators': [],
+                'validators': [validate_not_empty],
             }
         }
 

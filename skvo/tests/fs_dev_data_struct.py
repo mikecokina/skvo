@@ -152,7 +152,6 @@ def fill_basic_photometry_metatable_df(path):
     df["bandpass.photometric_system"] = "sys"
 
     df["instrument.instrument"] = "instrument.{}".format(instrument)
-    # df["instrument.instrument_uid"] = "instrument.uid.{}".format(instrument)
     df["instrument.telescope"] = "instrument.telescope.{}".format(instrument)
     df["instrument.camera"] = "instrument.camera.{}".format(instrument)
     df["instrument.spectroscope"] = "instrument.spect.{}".format(instrument)

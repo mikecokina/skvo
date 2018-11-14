@@ -102,12 +102,13 @@ Uploading process will craete mentioned json and ``POST`` it to the running endp
 On the backend, there is checked which of the incomming model objects already contain desired information and in such case
 won't be craeted and which are not stored in database and will be created on fly. In case, new observation is created, unique ``hash``
 based on all metadata is assigned to this record. This hash is intended to separate observation based on days.
-Hash is computed as ``sha512`` from string created as metadata joined with ``___``. Order is based on name of columnes, since
+Hash is computed as ``md5`` from string created as metadata joined with ``___``. Order is based on name of columnes, since
 columns of dataframe are sorted.
 On fly, there is generated also observation id,
 as primary key for ``observation`` model table and works as foreign key for time series (observation points, errors and exposure) data stored in OpenTSDB.
 
-Response also contain an ``instrument uuid``. Thaht uuid is used in timeseries data as tag value of instrument key.
+Response also contain an ``instrument hash``. That hash is used in timeseries data as tag value of instrument key and it is computed
+from follwoing values ``instrument``, ``telescope``, ``camera``, ``spectroscope`` and ``field_of_view`` as ``md5`` each separated by ``___``.
 
 Observation (time series) data:
 -------------------------------
@@ -382,21 +383,22 @@ or::
 When any match is found, response looks similar to this one::
 
     [
-        {
-            "start_date": "2017-12-04T00:00:01Z",
-            "end_date": "2017-12-04T00:00:15Z",
+         {
+            "start_date": "2018-01-02T00:00:01Z",
+            "end_date": "2018-01-02T00:00:15Z",
             "observation": {
-                "id": 1
+                "id": 7,
+                "observation_hash": "cf577bcad557cac7900f331b53e84d58"
             },
             "instrument": {
-                "id": 1,
+                "id": 3,
                 "instrument": "instrument.uvw",
+                "instrument_hash": "bf17e6e4055f80213bbfb4338d28e790",
                 "telescope": "instrument.telescope.uvw",
                 "camera": "instrument.camera.uvw",
                 "spectroscope": "instrument.spect.uvw",
-                "field_of_view": 10.0,
-                "description": "instrument.description",
-                "instrument_uuid": "74e8003a-ed91-4403-863f-ff4ba36f8078"
+                "field_of_view": 12.0,
+                "description": "instrument.description"
             },
             "dataid": {
                 "id": 1,
@@ -428,8 +430,8 @@ When any match is found, response looks similar to this one::
                 "catalogue": "default",
                 "catalogue_value": "bet_Lyr",
                 "description": "bet_Lyr description",
-                "right_ascension": 282.51,
-                "declination": 33.36,
+                "right_ascension": 18.5,
+                "declination": 33.21,
                 "equinox": "J2000",
                 "target_class": "variable"
             },

@@ -73,7 +73,7 @@ def df_to_timeseries_tsdb_metrics(df, source):
             'value': float(df["ts.magnitude"].iloc[i]),
             'tags':
                 {
-                    'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
+                    'instrument': str(df["instrument.instrument_hash"].iloc[0]),
                     'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'flux_calibration_level': int(df["ts.flux_calibration_level"].iloc[i]),
@@ -96,7 +96,7 @@ def observation_id_data_df_to_tsdb_metrics(df, source, observation_id):
             'value': int(observation_id),
             'tags':
                 {
-                    'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
+                    'instrument': str(df["instrument.instrument_hash"].iloc[0]),
                     'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'dtype': 'oid'
@@ -116,7 +116,7 @@ def df_to_exposure_tsdb_metrics(df, source):
             'value': int(df["ts.exposure"].iloc[i]),
             'tags':
                 {
-                    'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
+                    'instrument': str(df["instrument.instrument_hash"].iloc[0]),
                     'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'dtype': 'exposure'
@@ -137,7 +137,7 @@ def df_to_errors_tsdb_metrics(df, source):
             'value': float(df["ts.magnitude_error"].iloc[i]),
             'tags':
                 {
-                    'instrument': str(df["instrument.instrument_uuid"].iloc[0]),
+                    'instrument': str(df["instrument.instrument_hash"].iloc[0]),
                     'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'dtype': 'error'
@@ -153,6 +153,16 @@ def compute_sha512_from_metadata(metadata, salt):
     return utils.sha512_content(str(values).encode('utf-8'))
 
 
+def compute_md5_from_metadata(metadata, salt):
+    metadata = metadata.sort_index(axis=1)
+    values = str(salt) + "___" + "___".join([str(metadata[col].iloc[0]) for col in metadata.columns])
+    return utils.md5_raw_content(str(values).encode('utf-8'))
+
+
+def compute_metadata_md5(order, separator, **kwargs):
+    return utils.md5_raw_content(str(separator).join([str(kwargs[k]) for k in order]).encode('utf-8'))
+
+
 def photometry_data_to_metadata_json(metadata_df, data_df, source):
     df = data_df.copy()
     df_timestamp = time_utils.parse_timestamp(df)
@@ -161,7 +171,21 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
     df = df.sort_values("ts.unix")
     df = df.reset_index(drop=True)
     start_date = datetime.datetime.strptime(df["ts.timestamp"][df.first_valid_index()], "%Y-%m-%d %H:%M:%S")
-    observation_hash = compute_sha512_from_metadata(metadata_df, datetime.datetime.strftime(start_date, "%Y%m%d"))
+    observation_hash = compute_md5_from_metadata(metadata_df, datetime.datetime.strftime(start_date, "%Y%m%d"))
+    instrument = {
+        "instrument": metadata_df["instrument.instrument"].iloc[0],
+        "telescope": metadata_df["instrument.telescope"].iloc[0],
+        "camera": metadata_df["instrument.camera"].iloc[0] or None,
+        "spectroscope": metadata_df["instrument.spectroscope"].iloc[0] or None,
+        "field_of_view": metadata_df["instrument.field_of_view"].iloc[0],
+        "description": metadata_df["instrument.description"].iloc[0]
+    }
+    instrument_hash = compute_metadata_md5(
+        order=["instrument", "telescope", "camera", "spectroscope", "field_of_view"],
+        separator="___",
+        **instrument
+
+    )
 
     metadata = \
         {
@@ -181,14 +205,7 @@ def photometry_data_to_metadata_json(metadata_df, data_df, source):
                             "target_class": metadata_df["target.target_class"].iloc[0],
                             "equinox": metadata_df["target.equinox"].iloc[0]
                         },
-                        "instrument": {
-                            "instrument": metadata_df["instrument.instrument"].iloc[0],
-                            "telescope": metadata_df["instrument.telescope"].iloc[0],
-                            "camera": metadata_df["instrument.camera"].iloc[0] or None,
-                            "spectroscope": metadata_df["instrument.spectroscope"].iloc[0] or None,
-                            "field_of_view": metadata_df["instrument.field_of_view"].iloc[0],
-                            "description": metadata_df["instrument.description"].iloc[0]
-                        },
+                        "instrument": dict(instrument_hash=instrument_hash, **instrument),
                         "facility": {
                             "facility": metadata_df["facility.facility"].iloc[0],
                             "facility_uid": metadata_df["facility.facility_uid"].iloc[0],
@@ -310,8 +327,8 @@ def convert_df_int_values(df):
     return df
 
 
-def expand_metadata_with_instrument_uuid(metadata_df, uuid):
-    metadata_df["instrument.instrument_uuid"] = uuid
+def expand_metadata_with_instrument_hash(metadata_df, hash):
+    metadata_df["instrument.instrument_hash"] = hash
     return metadata_df
 
 
@@ -322,10 +339,10 @@ def get_response_observation_id(response: requests.Response):
     raise ValueError("Unexpected response status code")
 
 
-def get_response_instrument_uuid(response: requests.Response):
+def get_response_instrument_hash(response: requests.Response):
     if response.status_code in [200, 201]:
         content = json.loads(response.content.decode())
-        return content["photometry"][-1]["observation"]["instrument"]["instrument_uuid"]
+        return content["photometry"][-1]["observation"]["instrument"]["instrument_hash"]
     raise ValueError("Unexpected response status code")
 
 
@@ -337,7 +354,7 @@ def sample_tsdb_response_to_df(tsdb_response):
         {
             "samples": int(list(metric["dps"].values())[0]),
             "start_date": int(list(metric["dps"].keys())[0]),
-            "instrument_uuid": metric["tags"]["instrument"],
+            "instrument_hash": metric["tags"]["instrument"],
             "source": metric["tags"]["source"],
             "target": metric["tags"]["target"],
             "bandpass": dputils.parse_bandpass_from_metric(metric["metric"])
@@ -351,7 +368,7 @@ def add_separation_to_samples_dict(samples_dict):
 
 
 def merge_observation_data(df1, df2):
-    (left, right) = (df1, df2) if len(df1) < len(df2) else (df2, df1)
+    (left, right) = (df1, df2) if len(df1) > len(df2) else (df2, df1)
     return pd.merge(
         left, right, how='left', left_on=['timestamp'], right_on=['timestamp']
     )
@@ -415,5 +432,5 @@ def data_tsdb_reposne_to_df(tsdb_response):
     dfs = [oid_data, exposure_data, error_data, data]
 
     for _df in dfs:
-        df = merge_observation_data(_df, df)
+        df = merge_observation_data(df, _df)
     return df

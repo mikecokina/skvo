@@ -91,7 +91,7 @@ def get_observation_intervals(observations):
             "start_date": o.start_date,
             "end_date": o.end_date,
             "observation_id": o.observation_id,
-            "instrument_uuid": o.observation.instrument.instrument_uuid,
+            "instrument_hash": o.observation.instrument.instrument_hash,
             "source": o.observation.dataid.source,
             "target": o.observation.target.catalogue_value,
             "bandpass": o.bandpass.bandpass_uid
@@ -112,7 +112,7 @@ def get_samples(validated_data):
     observations = get_photometry_observation(validated_data)
     if observations:
         metadata = get_observation_intervals(observations)
-        samples = read_tsdb.get_samples(tsdb_connector=TSDB_CONNECTOR, metadata=metadata, version=pconf.NUM_VERSION)
+        samples = read_tsdb.get_samples(tsdb_connector=TSDB_CONNECTOR, metadata=metadata, version=pconf.VERSION)
         samples = transform.add_separation_to_samples_dict(samples)
         return samples
     return dict()
@@ -156,7 +156,7 @@ class PhotometryARef(APIView):
                 "id": 1
             },
             "instrument": {
-                "instrument_uuid": "b58d00ba-8435-4872-a8fd-595166774846"
+                "instrument_hash": "f104c9851b3d5efc373eafd49db9ffca"
             },
             "target": {
                 "id": 1,
@@ -185,13 +185,13 @@ class PhotometryARef(APIView):
         if access in ["open"]:
             data = read_tsdb.get_data(TSDB_CONNECTOR,
                                       target=str(validated_data["target"]["catalogue_value"]),
-                                      instrument_uuid=str(validated_data["instrument"]["instrument_uuid"]),
-                                      bandpass_uuid=str(validated_data["bandpass"]["bandpass_uid"]),
+                                      instrument_hash=str(validated_data["instrument"]["instrument_hash"]),
+                                      bandpass_uid=str(validated_data["bandpass"]["bandpass_uid"]),
                                       source=str(validated_data["dataid"]["source"]),
                                       observation_id=int(validated_data["observation"]["id"]),
                                       start_date=validated_data["start_date"],
                                       end_date=validated_data["end_date"],
-                                      version=pconf.NUM_VERSION)
+                                      version=pconf.VERSION)
             return Response("OK")
         return Response("We don't do that here")
 

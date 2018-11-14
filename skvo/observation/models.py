@@ -43,7 +43,7 @@ class Bandpass(models.Model):
 
 class Instrument(models.Model):
     instrument = models.CharField(max_length=64, null=False)
-    instrument_uuid = models.UUIDField(max_length=128, null=False, unique=True, editable=False, default=uuid4)
+    instrument_hash = models.CharField(max_length=64, null=False, unique=True)
     telescope = models.CharField(max_length=64, null=False)
     camera = models.CharField(max_length=64, null=True, default=None)
     spectroscope = models.CharField(max_length=64, null=True, default=None)
@@ -120,8 +120,8 @@ def get_bandpass_by_uid(uid):
     return Bandpass.objects.filter(bandpass_uid=str(uid))[0]
 
 
-def get_instrument_by_uuid(uuid):
-    return Instrument.objects.filter(instrument_uuid=str(uuid))[0]
+def get_instrument_by_hash(hash):
+    return Instrument.objects.filter(instrument_hash=str(hash))[0]
 
 
 def get_target_by_catalogue_value(cat_val):
