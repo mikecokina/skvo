@@ -1,7 +1,8 @@
 SKVO docs
 =========
 
-SKVO is a portal gathering processed photometry observation obrained by couple of different facilities and instruments. The main idea is to make those data accessible to others.
+SKVO is a portal gathering processed photometry observation, obtained by couple of different facilities, organisations
+and instruments. The main idea is to make those data accessible to others.
 
 Behind the scene
 ~~~~~~~~~~~~~~~~
@@ -9,124 +10,305 @@ Behind the scene
 Behind the scene of SKVO is hidden several different technologies that make it works.
 SKVO consist of the following main parts::
     
-    Ubuntu 16.04 server
-    Python DJango server
-    Apache/NGINX server
-    MySQL database
-    HBase databsae
-    OpenTSDB database
+    - Ubuntu 16.04 server
+    - Python DJango server
+    - Apache/NGINX server
+    - MySQL database
+    - HBase databsae
+    - OpenTSDB database
 
-Observation data are stored in couple of different locations, depends on data types.
+Bellow is the architecture of used components
+
+.. image:: ./_static/arch.png
+
+Just beware it is not a fixed model, any combinations of block separeated on the different ubuntu server can be joined,
+depends on performance demands.
+
+Observation data are stored in couple of different locations, depends on data types. Media (images) are stored
+somewhere on local storage, timeseries data are stored in OpenTSDB and best storage
+we find out for metadata is MySQL database.
 
 Photometry
 ~~~~~~~~~~
-Data comming from photometric observations consist of three different types and has to be stored in three different locations linked to each other. Observation data consist from the following types:
+Data comming from photometric observations consist of three different types and has to be stored in three different
+locations in some way linked to each other. Observation data consist from the following types:
 
     - images: processed raw images, converted to one of the following types, and so ``png`` or ``jpeg/jpg``
-    - metadata: information about observation and sources data comming from
+
+      (consider do not support jpeg, just png)
+    - metadata: information where the observation and source data are comming from
     - observation data: processed time series data that represents each point of observation
 
-Images (media)
+Media (iamges)
 --------------
 
-Media (images) are data representing real images cominng from observation. We are not providing raw iamges, but
-processed images. Those data re not supposed to replace observation timeseries data. Their quality is donwscaled.
-The main reaseon to store those data is give information to user, where points in OpenTSDB coming from.
+Media (images) are data representing real images comming from observation. We are not providing raw images, but
+processed. Its mean, raw images taken by the camera are converted to ``png`` format.
+Those data are not supposed to compensate observation timeseries data since their quality is donwscalled.
+The main reason to store those data is give information to user, where points in OpenTSDB are coming from.
+
+(in the first version, images don't be even exposed to enduser and their will be for internal purposses)
 
 
 Metadata
 --------
+
+Metadata contain a lot of usefull additional informations thaht cannot be stored as time series data. You might found
+there a place, where data come from, organisation providing data, instrument that data have been taken, etc.
 
 Example of metadata content is shown bellow::
 
     [
         {
             "observation": {
+                "id": 1,
                 "access": {
-                    "access": "on_demand"
+                    "id": 1,
+                    "access": "open"
                 },
                 "target": {
-                    "target": "beta_Lyr",
-                    "catalogue": "catalogue_name",
-                    "catalogue_value": "catalogue_value",
-                    "description": "desc",
-                    "right_ascension": "0.1000000000",
-                    "declination": "0.2000000000",
+                    "id": 1,
+                    "target": "bet_Lyr",
+                    "catalogue": "default",
+                    "catalogue_value": "bet_Lyr",
+                    "description": "bet_Lyr description",
+                    "right_ascension": "18.5000000000",
+                    "declination": "33.2100000000",
                     "equinox": "J2000",
-                    "target_class": null
+                    "target_class": "variable"
                 },
                 "instrument": {
-                    "instrument": "instrument_name",
-                    "telescope": "telescope",
-                    "camera": "camera",
-                    "spectroscope": "spectac",
+                    "id": 1,
+                    "instrument": "instrument.uvw",
+                    "instrument_hash": "f104c9851b3d5efc373eafd49db9ffca",
+                    "telescope": "instrument.telescope.uvw",
+                    "camera": "instrument.camera.uvw",
+                    "spectroscope": "instrument.spect.uvw",
                     "field_of_view": "10.0000000000",
-                    "description": "int desc"
+                    "description": "instrument.description"
                 },
                 "facility": {
-                    "facility": "facility_name",
-                    "facility_uid": "facility_uid",
-                    "description": "fac desc"
+                    "id": 1,
+                    "facility": "facility.in.upjs",
+                    "facility_uid": "uid.facility.upjs",
+                    "description": "facility.description.upjs"
                 },
                 "dataid": {
+                    "id": 1,
                     "organisation": {
-                        "organisation": "organisation_name_like",
-                        "organisation_did": "http://organ",
-                        "email": "email@google.com"
+                        "id": 1,
+                        "organisation": "organisation.upjs",
+                        "organisation_did": "http://organisation.did.upjs",
+                        "email": "upjs@upjs.com"
                     },
-                    "title": "data id title",
-                    "publisher": "data_id_publisher",
-                    "publisher_did": "http://data_id_publisher"
+                    "source": "upjs",
+                    "title": "title.upjs",
+                    "publisher": "publisher.upjs",
+                    "publisher_did": "http://publisher_did.upjs"
                 },
-                "observation_hash": 4573a65f66e66aa685436476545675675634654654
+                "observation_hash": "43dc67129bf0c6e2318c0cedc90aa97d"
             },
             "bandpass": {
-                "bandpass": "bandpass_name",
-                "bandpass_uid": "uid_for_band",
+                "id": 1,
+                "bandpass": "band.johnson.u",
+                "bandpass_uid": "johnson.u",
                 "spectral_band_type": "optical",
-                "photometric_system": "johnson"
+                "photometric_system": "sys"
             },
-            "media": "/etc/sys/data",
-            "start_date": "2018-05-01T00:00:00Z",
-            "end_date": "2018-05-04T00:00:00Z"
+            "media": "upjs::os.sep::photometry::os.sep::media::os.sep::201712::os.sep::bet_Lyr_20171204::os.sep::johnson.u",
+            "start_date": "2017-12-04T00:00:01Z",
+            "end_date": "2017-12-04T00:00:15Z"
         }
+        ...
     ]
 
 
 Those data are stored in MySQL database in several differend tables linked to each other by ``foreign keys``.
 Each of the table is deffined by the following python classes as object realted object (ORM)::
 
-    Here ORM will come
+    BANDPASS_SPECTRAL_BEND_TYPES = [
+        ('radio', 'radio'),
+        ('millimeter', 'millimeter'),
+        ('infrared', 'infrared'),
+        ('optical', 'optical'),
+        ('ultraviolet', 'ultraviolet'),
+        ('xray', 'xray'),
+        ('gammaray', 'gammaray')
+    ]
 
-Uploading process will craete mentioned json and ``POST`` it to the running endpoint ``/api/photometry/metadata``.
+    DTYPES = [("photometry", "photometry"), ("spectroscopy", "spectroscopy")]
+    ACCESS_RIGHT = [("open", "open"), ("on_demand", "on_demand"), ("restricted", "restricted")]
+
+
+    class Target(models.Model):
+        target = models.CharField(max_length=128, null=False)
+        catalogue = models.CharField(max_length=128, null=False)
+        catalogue_value = models.CharField(max_length=128, null=False)
+        description = models.CharField(max_length=128, null=True)
+        right_ascension = models.DecimalField(max_digits=20, decimal_places=10, null=False)
+        declination = models.DecimalField(max_digits=20, decimal_places=10, null=False)
+        equinox = models.CharField(max_length=64, null=False)
+        target_class = models.CharField(max_length=128, null=True)
+        created = models.DateTimeField(auto_now_add=True)
+
+        class Meta:
+            unique_together = ('catalogue', 'catalogue_value')
+
+
+    class Bandpass(models.Model):
+        bandpass = models.CharField(max_length=32, null=False)
+        bandpass_uid = models.CharField(max_length=32, null=False, unique=True)
+        spectral_band_type = models.CharField(choices=BANDPASS_SPECTRAL_BEND_TYPES, null=False, max_length=64)
+        photometric_system = models.CharField(max_length=32, null=False)
+        created = models.DateTimeField(auto_now_add=True)
+
+
+    class Instrument(models.Model):
+        instrument = models.CharField(max_length=64, null=False)
+        instrument_hash = models.CharField(max_length=64, null=False, unique=True)
+        telescope = models.CharField(max_length=64, null=False)
+        camera = models.CharField(max_length=64, null=True, default=None)
+        spectroscope = models.CharField(max_length=64, null=True, default=None)
+        field_of_view = models.DecimalField(max_digits=20, decimal_places=10, null=False)
+        description = models.CharField(max_length=256, null=True)
+        created = models.DateTimeField(auto_now_add=True)
+
+
+    class Facility(models.Model):
+        facility = models.CharField(max_length=128, null=False)
+        facility_uid = models.CharField(max_length=128, null=False, unique=True)
+        description = models.CharField(max_length=256, null=True)
+        created = models.DateTimeField(auto_now_add=True)
+
+
+    class Organisation(models.Model):
+        organisation = models.CharField(max_length=128, null=False)
+        organisation_did = models.CharField(max_length=128, null=False, unique=True)
+        email = models.EmailField(max_length=128, null=False)
+        created = models.DateTimeField(auto_now_add=True)
+
+
+    class AccessRights(models.Model):
+        access = models.CharField(choices=ACCESS_RIGHT, null=False, max_length=32, unique=True)
+        created = models.DateTimeField(auto_now_add=True)
+
+
+    class DataId(models.Model):
+        source = models.CharField(max_length=32, null=False)
+        title = models.CharField(max_length=32, null=False)
+        publisher = models.CharField(max_length=128, null=False)
+        publisher_did = models.CharField(max_length=128, null=False)
+        organisation = models.ForeignKey(to=Organisation, on_delete=models.PROTECT)
+        created = models.DateTimeField(auto_now_add=True)
+
+
+    class Observation(models.Model):
+        observation_hash = models.CharField(max_length=128, null=False, unique=True)
+        access = models.ForeignKey(to=AccessRights, on_delete=models.PROTECT)
+        target = models.ForeignKey(to=Target, on_delete=models.PROTECT)
+        instrument = models.ForeignKey(to=Instrument, on_delete=models.PROTECT)
+        facility = models.ForeignKey(to=Facility, on_delete=models.PROTECT)
+        dataid = models.ForeignKey(to=DataId, on_delete=models.PROTECT)
+        created = models.DateTimeField(auto_now_add=True)
+
+
+    class Photometry(models.Model):
+        observation = models.ForeignKey(to=Observation, on_delete=models.PROTECT)
+        bandpass = models.ForeignKey(to=Bandpass, on_delete=models.PROTECT)
+        media = models.CharField(max_length=256, null=False)
+        start_date = models.DateTimeField()
+        end_date = models.DateTimeField()
+        created = models.DateTimeField(auto_now_add=True)
+
+
+    class Spectroscopy(models.Model):
+        observation = models.ForeignKey(to=Observation, on_delete=models.PROTECT)
+        media = models.CharField(max_length=256, null=False)
+        start_date = models.DateTimeField()
+        end_date = models.DateTimeField()
+        created = models.DateTimeField(auto_now_add=True)
+
+
+Uploading process will craete json in required format and ``POST`` it to the running endpoint ``/api/photometry/metadata/``.
 On the backend, there is checked which of the incomming model objects already contain desired information and in such case
-won't be craeted and which are not stored in database and will be created on fly. In case, new observation is created, unique ``hash``
-based on all metadata is assigned to this record. This hash is intended to separate observation based on days.
+won't be craeted and on the other side, data which are not stored in database will be created on fly. In case,
+new observation is created, unique ``hash`` based on all metadata is assigned to this record.
+This hash is intended to separate observation based on days.
 Hash is computed as ``md5`` from string created as metadata joined with ``___``. Order is based on name of columnes, since
-columns of dataframe are sorted.
-On fly, there is generated also observation id,
-as primary key for ``observation`` model table and works as foreign key for time series (observation points, errors and exposure) data stored in OpenTSDB.
+columns of dataframe are sorted. Exact order of columns is as following::
 
-Response also contain an ``instrument hash``. That hash is used in timeseries data as tag value of instrument key and it is computed
-from follwoing values ``instrument``, ``telescope``, ``camera``, ``spectroscope`` and ``field_of_view`` as ``md5`` each separated by ``___``.
+    start_date
+
+    access.access
+    bandpass.bandpass
+    bandpass.bandpass_uid
+    bandpass.photometric_system
+    bandpass.spectral_band_type
+    dataid.publisher
+    dataid.publisher_did
+    dataid.title
+    facility.description
+    facility.facility
+    facility.facility_uid
+    instrument.camera
+    instrument.description
+    instrument.field_of_view
+    instrument.instrument
+    instrument.spectroscope
+    instrument.telescope
+    organisation.email
+    organisation.organisation
+    organisation.organisation_did
+    target.catalogue
+    target.catalogue_value
+    target.declination
+    target.description
+    target.equinox
+    target.right_ascension
+    target.target
+    target.target_class
+
+On the begining of the string, start date in form ``'YYYYMMDD`` is used as salt.
+
+On fly, there is generated also observation id,
+as primary key for ``observation`` model table and works as foreign key for time series
+(observation points, errors and exposure) data stored in OpenTSDB.
+
+Response also contain an ``instrument hash``. That hash is used in timeseries data as tag value of instrument
+key and it is computed as as ``md5`` from follwoing values ``instrument``, ``telescope``, ``camera``, ``spectroscope``
+and ``field_of_view`` in the mentioned order each separated by ``___``.
 
 Observation (time series) data:
 -------------------------------
 
-Observation data basically consist of magnitude, related timestamp, error, exposure and so forth. Those data will be stored in
-OpenTSDB. OpenTSDB is **nosql** database engine running on top of HBase nosql database. OpenTSDB was designed to store
-time series and subsequently provide efficient way to access them. Data are stored under key called metric. Each of the metric
-can carre couple of additional information. Those informations are stored in pairs ``key: value`` and we call them a **tags**.
+Observation data basically consist of ``magnitude``, ``related timestamp``, ``error``, ``exposure`` and so forth.
+Those data will be stored in OpenTSDB. OpenTSDB is **nosql** database engine running on top of HBase nosql database.
+OpenTSDB was designed to store time series and subsequently provide efficient way to access them. Data are stored under
+the key called metric. Each of the metric can carre couple of additional information. Those informations are
+stored in pairs ``key: value`` and we call them a **tags**. For more information visit `OpenTSDB website <http://opentsdb.net/>`_
 
-Observationd data, from the OpenTSDB point of view, can be splited to three different groups. Basically we created a different metrics
-carring a necessary informations about ``magnitudes``, ``magnitude errors`` and ``exposure``. The fourt additional metric is neccesery
-to store information about and link infrmation to metadata stored in MySQL database.
+Observationd data, from the OpenTSDB point of view, can be splited to three different groups. Basically we will create
+a different metrics carring a necessary informations about ``magnitudes``, ``magnitude errors`` and ``exposure``.
+The fourth additional metric is neccesery to store and link information to metadata saved in MySQL database.
 
 **Magnitude** for given target object is stored in metric **<target_uid>.<bandpass_uid>.photometry.<version>**, where
 ``target_uid`` is a unique identfier for target object, ``bandpas_uid`` is a unique identifier for bandpass used during
-observation nad ``version`` represent our internal sign for version of data. A given metric also contain a couple of tags, and so
-``instrument``, ``target``, ``source``, ``flux_calibration_level``, ``flux_calibration` and ``timeframe_reference_position``
-[explanation will came later]. An exmaple of http import json for OpenTSDB API is following::
+observation nad ``version`` represent our internal sign for version of data. Those information are choosen by service
+provider or data provider during upload process. Basically they have to be stored in files given for upload.
+A given metric also contain a couple of tags, and so ``instrument``, ``target``, ``source``, ``flux_calibration_level``,
+``flux_calibration` and ``timeframe_reference_position``
+
+The meaning of each mentioned quantities is as following::
+    - ``instrument``: value is a hash computed as described in part about `Metadata`
+    - ``target``: target is unique identifier for observation object; all non alphanumerical and non undersocres are HEXa encoded
+    - ``source``: source carre an information about dataset, data are comming from (e.g. upjs, vhao, etc.); value cannot contain non alphanumerical characters; since in this case, encoding to HEXa is not provided
+    - ``flux_calibration_level``: this quantity contain an information how good is observation point stored for given metric and timestamp; value have to be an integer; higher value denotate a better quality
+    - ``flux_calibration``: this tells us whether stored magnitude value represent a absolute magnitude (``abs``) or differential magnitude (``dif``)
+    - ``timeframe_reference_position``: and finally timeframe_reference_position, has an information about time reference position of timestamp value
+
+Just beware, timestamp value under point is stored is unix timestamp, not a Julian date as usually used in astronomy
+
+An exmaple of http import json for OpenTSDB API is following::
 
     [
         {
@@ -145,13 +327,15 @@ observation nad ``version`` represent our internal sign for version of data. A g
         }
     ]
 
-You probalby noticed ``-20`` in metric name. OpenTSDB metric allows just specific symbols to be in metric name, so we are necoding
+You probably noticed ``-20`` in metric name. OpenTSDB metric allows just specific symbols to be in metric name, so we are encoding
 all other symbols to HEX code for given symbol with leading ``-``.
 
 
 **Magnitude error** for given timestamp and magnitude is stored in similar way as mmagnitude itself. We are using a metric
 **<target_uid>.<bandpass_uid>.error.photometry.<version>** with following OpenTSDB tags, and so ``instrument``, ``target`` and ``source``.
-An example of metricc json is::
+Meaning of the used tags is same as in case of observation data.
+
+An example of the json form of metric requred for update to OpenTSDB is::
 
     [
         {
@@ -188,9 +372,7 @@ and example is bellow::
 
 Finally, there is a one more metrics puting together all previous with related metadata in MySQL database. Used metric is
 **<target_uid>.<bandpass_uid>.oid.photometry.<version>** and all values stored in this metric are just the same ``observation_id``
-from database working as a foreign key for relation database.
-
-
+from database. This value is latter used as a foreign key for relation database.
 
 
 Upload data flow
