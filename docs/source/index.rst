@@ -278,6 +278,11 @@ Response also contain an ``instrument hash``. That hash is used in timeseries da
 key and it is computed as as ``md5`` from follwoing values ``instrument``, ``telescope``, ``camera``, ``spectroscope``
 and ``field_of_view`` in the mentioned order each separated by ``___``.
 
+Important notes:
+    - right ascension have to be passed as positive value; in case you will pass a negative value, it will cause
+      a lookup problem and you won't be ale to find it
+
+
 Observation (time series) data:
 -------------------------------
 
@@ -299,7 +304,7 @@ A given metric also contain a couple of tags, and so ``instrument``, ``target``,
 ``flux_calibration` and ``timeframe_reference_position``
 
 The meaning of each mentioned quantities is as following::
-    - ``instrument``: value is a hash computed as described in part about `Metadata`
+    - ``instrument``: value is a hash computed as described in part about `Metadata`_
     - ``target``: target is unique identifier for observation object; all non alphanumerical and non undersocres are HEXa encoded
     - ``source``: source carre an information about dataset, data are comming from (e.g. upjs, vhao, etc.); value cannot contain non alphanumerical characters; since in this case, encoding to HEXa is not provided
     - ``flux_calibration_level``: this quantity contain an information how good is observation point stored for given metric and timestamp; value have to be an integer; higher value denotate a better quality
@@ -364,7 +369,6 @@ and example is bellow::
                     'instrument': ziga.specterX.buda,
                     'target': bet-20Lyr,
                     'source': upjs,
-                    "unit": ?????? think about this tag
                 }
         }
     ]
@@ -378,7 +382,8 @@ from database. This value is latter used as a foreign key for relation database.
 Upload data flow
 ~~~~~~~~~~~~~~~~
 
-Expected data struncture on the local storage is like following::
+All data processing from local data to metadata opentsdb data and media can be provided automatically by created script.
+To be able use an upload script, like following data structure has to be provided::
 
     data
         `- source
@@ -441,23 +446,23 @@ Data::
 
     2017-12-04 00:00:11,0.25,0.07692307692307693,abs,2,12,heliocenter
 
-Column name convention follow, otherwise uploader script won't work. Transformation function from dataframe to tsdb metrics and
-metadata json rely on the mentioned convention.
+You **have to**  follow naming convention, otherwise uploader script won't work. Transformation function from dataframe
+to tsdb metrics and metadata json rely on the mentioned convention.
 
 You have probably noticed, that data in tables are represented as and real comma separated values, so, just use real csv,
-not any decimal position same margin files or any different similar bulshits.
+not any decimal position same margin files or any different similar bullshits.
 
-When data are loaded to memory, from the given informations a metadata jeson is created. An exmaple of metadata json is shown above
+When data are loaded to memory, from the given informations a metadata json is created. An exmaple of metadata json is shown above
 in section `Metadata`_ . Created metadata json is 'POSTed' on listening endpoint of SKVO Django server, and so ``/api/photometry/metadata``.
 This endpoint will return a response based on serializer which contain generated uuid4 of observation and databsae observation id.
 The observation id is used in observation id metrics which are linkin database metadata and other observation OpenTSDB metrics.
 
 Now observation data are processed. It is mean, all necessary metrics described in `Observation (time series) data:`_ are created.
-Basicaly, pandas dataframes are converted to the python list of dicts shown above, no big deal. Finally, all created metrics are
+Basically, pandas dataframes are converted to the python list of dicts shown above, no big deal. Finally, all created metrics are
 'POSTed' by ``pyopentsdb`` python library on the OpenTSDB HTTP API endpoint, ``/api/put/``.
     
 
-Finally, just media left. For given observation, each image file is read from local storage as raw object and with couple of
+At the end, just media left. For given observation, each image file is read from local storage as raw object and with couple of
 additional metadta is serialized to the following schema::
 
     {
@@ -471,9 +476,9 @@ additional metadta is serialized to the following schema::
     }
 
 Raw content is GZIPed before operation of serialisation and md5 CRC sum is computet from gziped object. Such schema is converted to
-**avro** binary and this bytes like object is POSTed to endpoint ``/api/photometry/media`` where avro is decoded and file is stored.
+**avro** binary and this bytes like object is POSTed to endpoint ``/api/photometry/media/`` where avro is decoded and file is stored.
 
-Serialized information are encoded to avro based on the following schema::
+Serialized informations are encoded to avro, based on the following schema::
 
     {
         "namespace": "skvo.types",
@@ -524,26 +529,28 @@ Local storage structure on the remote server is almost the same as on the storag
 
 where ``data`` path is specified in ``skvo.ini`` config file as ``export_path``, of course, on the server side.
 
-Change against a local storage, where data are comming from is in filename. There is added an unix timestamp in filename,
-since in time series subset, we can loose information, which file belongs to which observation point.
-During upload process, timestamp is obtained from dataframe based on the index in filename. Just beware, in case,
-there is any inconsistency between data table and order of ids in filename of image, wrong timestamp will be assigned to image
-filename.
+Main difference against a local storage, where data are comming from is in a filename. There is added an unix
+timestamp in name of file, since in time series **sub** set, we can loose information, which file belongs
+to which observation observation point. During upload process, timestamp is obtained from dataframe based
+on the index in filename. Just beware, in case, there is any inconsistency between data table and order
+of ids in filename of image, wrong timestamp will be assigned to image filename. Number and order of images have to match
+order and number of datapoints in csv data table.
 
 Lookup
 ~~~~~~
 
-SKVO providing an endpoint for searching observations defined by give combination of the following parameters:
+SKVO providing an endpoint for searching observations defined by given combination of the following parameters:
 
-    - dataset - define a datasets, it means, you can lookup the data for the specific source (e.g. upjs, vhao, etc.)
-    - ra - right ascension of central points to starts lookup
-    - de - declination of central points to starts lookup
-    - target - target is another way, how to specify a central point; right ascension and declination is resolved on the backend; in case, ``ra`` and ``de`` are provided, coordinates of targets are ignored
+    - dataset - define a datasets/source, it means, you can lookup the data for the specific source (e.g. upjs, vhao, etc.)
+    - ra - right ascension of central point to starts lookup
+    - de - declination of central point to starts lookup
+    - target - target is another way, how to specify a central point; right ascension and declination is resolved
+               on the backend; in case, ``ra`` and ``de`` are provided, coordinates of target are ignored
 
     - box_size_ra - box size in degrees of right ascension to search in
     - box_size_de - box size in degrees of declination  to search in
 
-Lookup endpoint is ``/api/photometry/lookup/`` and accepts ``POST`` method. An example of JSON acceptable by this endpoint is::
+Lookup endpoint is ``/api/photometry/lookup/`` and it accepts ``POST`` method. An example of JSON acceptable by this endpoint is::
 
     {
         "dataset": "upjs",
@@ -631,15 +638,71 @@ When any match is found, response looks similar to this one::
 
 
 There is also a posibility to use method GET. In such case, it is necessary to distinguish if you want to use ``target``
-or coordinates. In case, you want to use target, then url is pecified as following::
+or coordinates. In case, you want to use target, then url is pecified in following way::
 
     /api/photometry/lookup/dataset/<dataset_value: string>/target/<target_value: string>/box_size_ra/<box_size_ra_value: float>/box_size_de/<box_size_de_value: float>/
 
-!!! do not forget trailing slash !!!
+Important notes:
+    - do not forget trailing slash
 
-Parmetre ``dataset``, ``box_size_ra`` and ``box_size_de`` are optional parameters and can be ommited. In such case, also get rid of
+Parameter ``dataset``, ``box_size_ra`` and ``box_size_de`` are optional and can be ommited. In such case, also get rid of
 prefix in url like ``/dataset/`` or ``/box_size_ra/``.
 
 Similar behaviour is also in case if you want to use a coordinates instead of target. Then, url looks like this::
 
     /api/photometry/lookup/dataset/<dataset_value: string>/ra/<ra_value: float>/de/<de_value: float>/box_size_ra/<box_size_ra_value: float>/box_size_de/<box_size_de_value: float>/
+
+
+Access reference
+~~~~~~~~~~~~~~~~
+
+Way to obtain data is hit endpoint ``/api/photometry/aref/`` by POST method with specified JSON. Informations to fill up
+an access reference JSON have to be obtainied from lookup mentioned in `Lookup`_
+Structure of ``aref`` JSON is like this one::
+
+    {
+        "start_date": <string: YYYY-MM-DD HH:MM:SS>,
+        "end_date": <string: YYYY-MM-DD HH:MM:SS>,
+        "observation": {
+            "id": <integer>
+        },
+        "instrument": {
+            "instrument_hash": <string>
+        },
+        "target": {
+            "catalogue_value": <string>
+        },
+        "bandpass": {
+            "bandpass_uid": <string>,
+        },
+        "dataid": {
+            "source": <string>
+        }
+    }
+
+Concrete example is bellow::
+
+    {
+        "start_date": "2017-12-04 00:00:01",
+        "end_date": "2017-12-04 00:00:15",
+        "observation": {
+            "id": 1
+        },
+        "instrument": {
+            "instrument_hash": "f104c9851b3d5efc373eafd49db9ffca"
+        },
+        "target": {
+            "catalogue_value": "bet_Lyr"
+        },
+        "bandpass": {
+            "bandpass_uid": "johnson.u",
+        },
+        "dataid": {
+            "source": "upjs"
+        }
+    }
+
+In current version, there is not accepted ``many`` input.
+Response of endpoint is like following::
+
+    add response
