@@ -2,6 +2,9 @@
 *.log*
 env/*
 .idea/*
+build/*
+docs/build/
 __pycache__/*
 __pycache__
+skvo/observation/migrations
 
