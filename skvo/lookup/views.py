@@ -192,7 +192,7 @@ class PhotometryARef(APIView):
                                       start_date=validated_data["start_date"],
                                       end_date=validated_data["end_date"],
                                       version=pconf.VERSION)
-            return Response("OK")
+            return Response(data)
         return Response("We don't do that here")
 
 

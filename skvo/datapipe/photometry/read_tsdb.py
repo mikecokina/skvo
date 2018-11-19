@@ -93,9 +93,9 @@ def get_data(tsdb_connector: tsdb.TsdbConnector, target: str, instrument_hash: s
 
     tsdb_response = tsdb_connector.multiquery(query_chunks)
     df = ptransform.data_tsdb_reposne_to_df(tsdb_response) if tsdb_response else pd.DataFrame()
-    pass
-
-    # logger.info(query_chunks)
+    df = df[df["observation_id"] == observation_id]
+    data = mdptransform.photometry_data_df_to_dict(df)
+    return data
 
 
 def get_samples(tsdb_connector: tsdb.TsdbConnector, metadata: list, version: float = None):

@@ -80,6 +80,7 @@ def df_to_timeseries_tsdb_metrics(df, source):
                     'flux_calibration': str(df["ts.flux_calibration"].iloc[i]),
                     'timeframe_reference_position': str(df["ts.timeframe_reference_position"].iloc[i]),
                     'dtype': 'observation'
+                    # todo: extend with unit in next version
                 }
         }
         for i in range(timestamp.shape[0])
@@ -120,6 +121,7 @@ def df_to_exposure_tsdb_metrics(df, source):
                     'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'dtype': 'exposure'
+                    # todo: extend with unit in next version
 
                 }
         }
@@ -141,6 +143,7 @@ def df_to_errors_tsdb_metrics(df, source):
                     'target': special_characters_encode(str(df["target.target"].iloc[0])),
                     'source': str(source),
                     'dtype': 'error'
+                    # todo: extend with unit in next version
                 }
         }
         for i in range(timestamp.shape[0])
