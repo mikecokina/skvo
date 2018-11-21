@@ -130,6 +130,8 @@ def get_samples(tsdb_connector: tsdb.TsdbConnector, metadata: list, version: flo
                         "groupBy": True
                     },
                     {
+                        # fixme: change target to catalogue value
+                        # fixme: do the same in photometry/transform
                         "type": "literal_or",
                         "filter": special_characters_encode(str(meta["target"])),
                         "tagk": "target",

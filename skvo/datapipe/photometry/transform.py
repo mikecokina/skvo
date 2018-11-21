@@ -74,7 +74,7 @@ def df_to_timeseries_tsdb_metrics(df, source):
             'tags':
                 {
                     'instrument': str(df["instrument.instrument_hash"].iloc[0]),
-                    'target': special_characters_encode(str(df["target.target"].iloc[0])),
+                    'target': special_characters_encode(str(df["target.catalogue_value"].iloc[0])),
                     'source': str(source),
                     'flux_calibration_level': int(df["ts.flux_calibration_level"].iloc[i]),
                     'flux_calibration': str(df["ts.flux_calibration"].iloc[i]),
@@ -98,7 +98,7 @@ def observation_id_data_df_to_tsdb_metrics(df, source, observation_id):
             'tags':
                 {
                     'instrument': str(df["instrument.instrument_hash"].iloc[0]),
-                    'target': special_characters_encode(str(df["target.target"].iloc[0])),
+                    'target': special_characters_encode(str(df["target.catalogue_value"].iloc[0])),
                     'source': str(source),
                     'dtype': 'oid'
                 }
@@ -118,7 +118,7 @@ def df_to_exposure_tsdb_metrics(df, source):
             'tags':
                 {
                     'instrument': str(df["instrument.instrument_hash"].iloc[0]),
-                    'target': special_characters_encode(str(df["target.target"].iloc[0])),
+                    'target': special_characters_encode(str(df["target.catalogue_value"].iloc[0])),
                     'source': str(source),
                     'dtype': 'exposure'
                     # todo: extend with unit in next version
@@ -140,7 +140,7 @@ def df_to_errors_tsdb_metrics(df, source):
             'tags':
                 {
                     'instrument': str(df["instrument.instrument_hash"].iloc[0]),
-                    'target': special_characters_encode(str(df["target.target"].iloc[0])),
+                    'target': special_characters_encode(str(df["target.catalogue_value"].iloc[0])),
                     'source': str(source),
                     'dtype': 'error'
                     # todo: extend with unit in next version
