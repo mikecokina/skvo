@@ -38,7 +38,7 @@ def _parse_lookup_request(data):
             box_size_de=float(data.get("box_size_de")) if data.get("box_size_de") else DEFAULT_BOX_SIZE_DE
         )
 
-        if not kwargs["target"] and (not kwargs["ra"] and not kwargs["de"]):
+        if kwargs["target"] is None and (kwargs["ra"] is None and kwargs["de"] is None):
             raise Exception("missing argument `target` or arguments `ra` & `de` in request")
 
     except Exception as e:
