@@ -1,0 +1,29 @@
+---
+# tasks file for supervisor
+
+- name: install supervisor
+  apt:
+    name: supervisor
+    state: present
+  notify: restart supervisor
+
+- name: create supervisor socket file
+  raw: "mkdir -p /var/run/supervisor/ && touch /var/run/supervisor/supervisor.sock"
+
+- name: generate supervisor config file
+  template:
+    src: supervisord.conf.j2
+    dest: /etc/supervisor/supervisord.conf
+  notify: restart supervisor
+
+- name: enable supervisor service
+  service:
+    name: supervisor
+    enabled: yes
+
+- name: ensure that supervisor is started
+  service:
+    name: supervisor
+    state: started
+
+
