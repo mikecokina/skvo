@@ -46,14 +46,29 @@ TSDB_CONNECTOR = tsdb.tsdb_connection(host=OPENTSDB_SERVER)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '(yty%gzc4x7(12$h@tnzgv(fb-3_cp*r0y%6i3uis^b61g+ppy'
+# SECRET_KEY = '(yty%gzc4x7(12$h@tnzgv(fb-3_cp*r0y%6i3uis^b61g+ppy'
+
+SECRET_KEY = config.get('secret', 'secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config.get('django', 'debug').lower() == 'true'
 
-ALLOWED_HOSTS = []
+if DEBUG:
+    ALLOWED_HOSTS = []
+else:
+    ALLOWED_HOSTS = [host.strip() for host in config.get('django', 'allowed_hosts').split(',')]
 
+STATIC_URL = '/skvo_static/'
+if config.get('django', 'static_root'):
+    STATIC_ROOT = config.get('django', 'static_root')
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+MEDIA_URL = '/skvo_media/'
+if config.get('django', 'media_root'):
+    MEDIA_ROOT = config.get('django', 'media_root')
+else:
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Application definition
 
@@ -160,8 +175,3 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.1/howto/static-files/
-
-STATIC_URL = '/static/'
