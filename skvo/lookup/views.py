@@ -15,6 +15,7 @@ from observation.models import Photometry
 from skvo.settings import TSDB_CONNECTOR
 from utils import post
 from utils import utils
+import datetime
 
 # Create your views here.
 
@@ -46,6 +47,29 @@ def _parse_lookup_request(data):
         logging.exception(msg)
         raise KeyError(msg)
     return kwargs
+
+
+def _parse_aref_request(data):
+    validated_data = {
+        "start_date": datetime.datetime.strptime(data["start_date"], "%Y-%m-%d %H:%M:%S"),
+        "end_date": datetime.datetime.strptime(data["end_date"], "%Y-%m-%d %H:%M:%S"),
+        "observation": {
+            "id": int(data["observation"]["id"])
+        },
+        "instrument": {
+            "instrument_hash": str(data["instrument"]["instrument_hash"])
+        },
+        "target": {
+            "catalogue_value": str(data["target"]["catalogue_value"])
+        },
+        "bandpass": {
+            "bandpass_uid": str(data["bandpass"]["bandpass_uid"])
+        },
+        "dataid": {
+            "source": str(data["dataid"]["source"])
+        }
+    }
+    return validated_data
 
 
 def prepare_photometry_model_filter_clause(validated_data):
@@ -146,29 +170,9 @@ class PhotometryLookupGetView(APIView):
 
 
 class PhotometryARef(APIView):
-    def get(self, request, *args, **kwargs):
-        import datetime
-
-        validated_data = {
-            "start_date": datetime.datetime.strptime("2017-12-04 00:00:01", "%Y-%m-%d %H:%M:%S"),
-            "end_date": datetime.datetime.strptime("2017-12-04 00:00:15", "%Y-%m-%d %H:%M:%S"),
-            "observation": {
-                "id": 1
-            },
-            "instrument": {
-                "instrument_hash": "f104c9851b3d5efc373eafd49db9ffca"
-            },
-            "target": {
-                "id": 1,
-                "catalogue_value": "bet_Lyr"
-            },
-            "bandpass": {
-                "bandpass_uid": "johnson.u",
-            },
-            "dataid": {
-                "source": "upjs"
-            }
-        }
+    def post(self, request, *args, **kwargs):
+        data = post.get_post_data(request)
+        validated_data = _parse_aref_request(data)
 
         observation_model = models.get_observation_by_id(uid=validated_data["observation"]["id"])
         access = str(observation_model.access.access).lower()
