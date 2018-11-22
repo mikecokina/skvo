@@ -1,0 +1,31 @@
+[uwsgi]
+# Django-related settings
+# the base directory (full path)
+chdir           = {{ djserver_dist }}/skvo/skvo
+# Django's wsgi file
+# module          = skvo.wsgi
+# the virtualenv (full path)
+home            = {{ venv }}
+
+# process-related settings
+# master
+master          = true
+# maximum number of worker processes
+processes       = 4
+# the socket (use the full path to be safe
+socket          = 127.0.0.1:17300
+# ... with appropriate permissions - may be needed
+# chmod-socket    = 666
+# clear environment on exit
+vacuum          = true
+
+# logto = /var/log/uwsgi/%n.log
+wsgi-file = skvo/wsgi.py
+
+buffer-size=32768
+
+# tell uWSGI to rewrite PATH_INFO and SCRIPT_NAME according to mount-points
+# manage-script-name = true
+
+
+

@@ -1,0 +1,32 @@
+---
+# handlers file for metars
+#
+- name: run db migration
+  command: "su -c '{{ venv }}/bin/python {{ djserver_dist }}/skvo/skvo/manage.py migrate --noinput' {{ skvo_user }}"
+  environment:
+    METARS_CONFIG: "{{ djserver_dir }}/skvo.ini"
+    PYTHONPATH: "{{ djserver_dist }}"
+  register: migration_out
+  notify: show migration_out
+
+- name: show migration_out
+  debug: msg="{{ migration_out.stdout }}"
+
+- name: run collectstatic
+  command: "su -c '{{ venv }}/bin/python {{ djserver_dist }}/skvo/skvo/manage.py collectstatic --noinput' {{ skvo_user }}"
+  environment:
+    METARS_CONFIG: "{{ djserver_dir }}/conf.ini"
+    PYTHONPATH: "{{ djserver_dist }}"
+  register: collectstatic_out
+  notify: show collectstatic_out
+
+- name: show collectstatic_out
+  debug: msg="{{ collectstatic_out.stdout }}"
+
+- name: restart apache
+  service:
+    name: apache2
+    state: restarted
+
+
+

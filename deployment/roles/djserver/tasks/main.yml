@@ -1,0 +1,168 @@
+- name: ensure dir for skvo django server is created
+  file:
+    path: "{{ djserver_dir }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0755
+
+- name: ensure install dir is created
+  file:
+    path: "{{ install_dir }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0755
+
+- name: add repo python-3.6
+  apt_repository:
+    repo: "{{ python_repo }}"
+    update_cache: yes
+    state: present
+
+
+- name: install system packages needed by djangoserver
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python3.6
+    - python3.6-dev
+    - python3.6-dbg
+    - python3.6-gdbm
+    - python3.6-venv
+    - libmysqld-dev
+    - curl
+
+- name: install pip3.6
+  raw: "curl https://bootstrap.pypa.io/get-pip.py | python3.6"
+
+- name: install virtualenv via pip3
+  pip:
+    name: virtualenv
+    executable: pip3.6
+
+- name: ensure django dirs are created
+  file:
+    path: "{{ djserver_dir }}/{{ item }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0755
+  with_items:
+    - dist/skvo
+    - logs
+
+- name: ensure django logs dirs are created
+  file:
+    path: "{{ media_root }}/logs"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0755
+
+
+- name: copy install package
+  copy:
+    src: "{{ install_package }}"
+    dest: "{{ install_dir }}"
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0775
+
+- name: decompress skvo django package
+  unarchive:
+    src: "{{ install_dir }}/skvo-{{ version }}.tar.gz"
+    dest: "{{ djserver_dist }}"
+    copy: no
+
+- name: ensure pip version is 9.0.3
+  pip:
+    virtualenv_python: python3.6
+    virtualenv: "{{ venv }}"
+    name: pip
+    version: 9.0.3
+
+- name: install packages to virtualenv
+  pip:
+    virtualenv_python: python3.6
+    virtualenv: "{{ venv }}"
+    requirements: "{{ djserver_dist }}/skvo/requirements"
+
+- name: ensure that skvo user is owner of all files and dirs in dist
+  file:
+    path: "{{ djserver_dist }}"
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    recurse: yes
+  changed_when: false
+
+- name: generate skvo.ini
+  template:
+    src: skvo.ini.j2
+    dest: "{{ djserver_dir }}/skvo.ini"
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0640
+
+
+- name: generate uwsgi ini file
+  template:
+    src: skvo_wsgi.ini.j2
+    dest: "{{ djserver_dir }}/skvo_wsgi.ini"
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0640
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

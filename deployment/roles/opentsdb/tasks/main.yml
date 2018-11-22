@@ -1,5 +1,13 @@
 # tasks file for opentsdb
 
+- name: ensure install dir is created
+  file:
+    path: "{{ opentsdb_install_dir }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0755
+
 - name: copy install package
   copy:
     src: "{{ opentsdb_package }}"

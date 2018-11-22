@@ -1,0 +1,41 @@
+---
+# tasks file for apache
+
+- name: install apache
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - apache2
+    - libapache2-mod-proxy-uwsgi
+
+- name: copy module configuration files
+  copy:
+    src: "{{ item }}"
+    dest: /etc/apache2/conf-enabled
+  notify: restart apache
+  with_items:
+    - 00-uwsgi.conf
+
+- name: generate default apache config
+  template:
+    src: apache2/skvo.conf.j2
+    dest: /etc/apache2/sites-enabled/skvo.conf
+  notify: restart apache
+
+- name: create dir for apps configs
+  file:
+    path: /etc/apache2/sites-enabled/apps
+    state: directory
+
+- name: ensure that apache is enabled
+  service:
+    name: apache2
+    enabled: yes
+
+- meta: flush_handlers
+
+- name: ensure that apache is running
+  service:
+    name: apache2
+    state: started

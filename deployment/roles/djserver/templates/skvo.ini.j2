@@ -1,0 +1,18 @@
+[database]
+engine = django.db.backends.mysql
+name = {{ mysql_database }}
+user = {{ mysql_user }}
+host = {{ mysql_host }}
+port = {{ mysql_port }}
+password = {{ mysql_password }}
+default_character_set = utf8
+
+[django]
+debug=False
+static_root=
+media_root={{ media_root }}
+allowed_hosts = *
+
+[secret]
+secret_key={{ secret_key }}
+
