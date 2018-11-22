@@ -695,7 +695,7 @@ Concrete example is bellow::
             "catalogue_value": "bet_Lyr"
         },
         "bandpass": {
-            "bandpass_uid": "johnson.u",
+            "bandpass_uid": "johnson.u"
         },
         "dataid": {
             "source": "upjs"
