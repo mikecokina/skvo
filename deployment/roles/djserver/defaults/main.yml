@@ -1,6 +1,10 @@
 version: 0.1.0
 
 opt_home: /opt/skvo
+base_path: /home/skvo/skvo_base_path
+export_path: /home/skvo/skvo_export_path
+
+opentsdb_server: http://localhost:4242/
 
 djserver_dir: "{{ opt_home }}/djserver"
 djserver_logs: "{{ djserver_dir }}/logs"
@@ -11,11 +15,11 @@ venv: "{{ djserver_dir }}/env36"
 mysql_database: skvo
 mysql_host: localhost
 mysql_port: 3306
-mysql_user: user
-mysql_password: "****"
+mysql_user: root
+mysql_password: pass
 
 media_root: "{{ djserver_dir }}/media"
-secret_key: (yty%gzc4x7(12$h@tnzgv(fb-3_cp*r0y%6i3uis^b61g+ppy
+secret_key: "&rva7@2#$_qwp#91@u6r1i@hea0d^42(-z4=s!x#^o)j)039f&"
 
 python_repo: ppa:jonathonf/python-3.6
 

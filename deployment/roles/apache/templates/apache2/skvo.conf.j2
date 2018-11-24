@@ -1,4 +1,7 @@
-<VirtualHost skvo.science.upjs.sk:80>
-    DocumentRoot "/opt/skvo/"
+<VirtualHost *:80>
+    DocumentRoot "{{ opt_home }}"
+    RewriteEngine On
+
+    IncludeOptional conf.d/apps/*.conf
 </VirtualHost>
 

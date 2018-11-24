@@ -4,7 +4,7 @@
 - name: run db migration
   command: "su -c '{{ venv }}/bin/python {{ djserver_dist }}/skvo/skvo/manage.py migrate --noinput' {{ skvo_user }}"
   environment:
-    METARS_CONFIG: "{{ djserver_dir }}/skvo.ini"
+    SKVO_CONFIG: "{{ djserver_dir }}/skvo.ini"
     PYTHONPATH: "{{ djserver_dist }}"
   register: migration_out
   notify: show migration_out
@@ -15,7 +15,7 @@
 - name: run collectstatic
   command: "su -c '{{ venv }}/bin/python {{ djserver_dist }}/skvo/skvo/manage.py collectstatic --noinput' {{ skvo_user }}"
   environment:
-    METARS_CONFIG: "{{ djserver_dir }}/conf.ini"
+    SKVO_CONFIG: "{{ djserver_dir }}/skvo.ini"
     PYTHONPATH: "{{ djserver_dist }}"
   register: collectstatic_out
   notify: show collectstatic_out
@@ -28,5 +28,9 @@
     name: apache2
     state: restarted
 
+- name: restart skvo-uwsgi
+  supervisorctl:
+    name: skvo-uwsgi
+    state: restarted
 
 

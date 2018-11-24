@@ -62,6 +62,23 @@
     mode: 0755
 
 
+- name: ensure {{ base_path }} exists
+  file:
+    path: "{{ base_path }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0755
+
+- name: ensure {{ export_path }} exists
+  file:
+    path: "{{ export_path }}"
+    state: directory
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0755
+
+
 - name: copy install package
   copy:
     src: "{{ install_package }}"
@@ -75,6 +92,10 @@
     src: "{{ install_dir }}/skvo-{{ version }}.tar.gz"
     dest: "{{ djserver_dist }}"
     copy: no
+  notify:
+    - restart skvo-uwsgi
+    - run db migration
+    - run collectstatic
 
 - name: ensure pip version is 9.0.3
   pip:
@@ -104,6 +125,10 @@
     owner: "{{ skvo_user }}"
     group: "{{ skvo_user }}"
     mode: 0640
+  notify:
+    - restart skvo-uwsgi
+    - run db migration
+    - run collectstatic
 
 
 - name: generate uwsgi ini file
@@ -113,10 +138,33 @@
     owner: "{{ skvo_user }}"
     group: "{{ skvo_user }}"
     mode: 0640
+  notify:
+    - restart skvo-uwsgi
+    - run db migration
+    - run collectstatic
+
+
+- name: generate supervisor file for uwsgi
+  template:
+    src: skvo_uwsgi.ini.j2
+    dest: /etc/supervisor/supervisord.d/skvo-uwsgi.ini
+    owner: "{{ skvo_user }}"
+    group: "{{ skvo_user }}"
+    mode: 0640
+  notify: restart skvo-uwsgi
 
 
 
-
+- name: generate apache config file
+  template:
+    src: apache2/apps/skvo.conf.j2
+    dest: /etc/apache2/conf.d/apps/skvo.conf
+    owner: root
+    group: "{{ skvo_user }}"
+    mode: 0664
+  notify:
+    - restart apache
+    - restart skvo-uwsgi
 
 
 

@@ -1,3 +1,7 @@
+[general]
+base_path = {{ base_path }}
+export_path = {{ export_path }}
+
 [database]
 engine = django.db.backends.mysql
 name = {{ mysql_database }}
@@ -8,11 +12,15 @@ password = {{ mysql_password }}
 default_character_set = utf8
 
 [django]
-debug=False
-static_root=
-media_root={{ media_root }}
+debug = False
+static_root =
+media_root = {{ media_root }}
 allowed_hosts = *
 
 [secret]
-secret_key={{ secret_key }}
+secret_key = {{ secret_key }}
 
+
+[opentsdb]
+server = {{ opentsdb_server }}
+batch_size = 1000

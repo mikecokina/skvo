@@ -9,6 +9,12 @@
     - apache2
     - libapache2-mod-proxy-uwsgi
 
+- name: adding www-data (apache) to skvo group  
+  raw: usermod -aG skvo www-data
+
+- name: enable mod rewrite
+  command: a2enmod rewrite
+
 - name: copy module configuration files
   copy:
     src: "{{ item }}"
@@ -25,7 +31,7 @@
 
 - name: create dir for apps configs
   file:
-    path: /etc/apache2/sites-enabled/apps
+    path: /etc/apache2/conf.d/apps
     state: directory
 
 - name: ensure that apache is enabled

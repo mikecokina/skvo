@@ -1,0 +1,14 @@
+[program:skvo-uwsgi]
+command={{ venv }}/bin/uwsgi --ini {{ djserver_dir }}/skvo_wsgi.ini
+directory={{ djserver_dir }}
+user={{ skvo_user }}
+redirect_stderr=true
+stdout_logfile={{ djserver_logs }}/skvo-uwsgi-server.log
+stdout_logfile_maxbytes=10MB
+stdout_logfile_backups=4
+environment=PYTHONPATH={{ djserver_dist }},METARS_CONFIG={{ djserver_dir }}/skvo.ini
+killasgroup=true
+stopasgroup=true
+autorestart=true
+stopsignal=QUIT
+
