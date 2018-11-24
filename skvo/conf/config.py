@@ -9,12 +9,19 @@ import pytz
 
 
 parser = ConfigParser()
+
+env_variable_config = os.environ.get('SKVO_CONFIG', '')
 venv_config = os.path.join(os.environ.get('VIRTUAL_ENV', ''), 'conf', 'skvo.ini')
 
-if not os.path.isfile(venv_config):
+if os.path.isfile(env_variable_config):
+    CONFIG_FILE = env_variable_config
+elif os.path.isfile(venv_config):
+    CONFIG_FILE = venv_config
+else:
     raise LookupError("Couldn't resolve configuration file. To define it \n "
+                      "  - Set the environment variable SKVO_CONFIG, or \n "
                       "  - add conf/skvo.ini under your virtualenv root\n")
-CONFIG_FILE = venv_config
+
 LOG_CONFIG = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'conf', 'skvo-log.json')
 
 BASE_PATH = os.path.expanduser("~/data")

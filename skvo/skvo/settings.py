@@ -24,17 +24,24 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # config
+
+env_variable_config = os.environ.get('SKVO_CONFIG', '')
 venv_config = os.path.join(os.environ.get('VIRTUAL_ENV', ''), 'conf', 'skvo.ini')
 
-if not os.path.isfile(venv_config):
+if os.path.isfile(env_variable_config):
+    config_file = env_variable_config
+elif os.path.isfile(venv_config):
+    config_file = venv_config
+else:
     raise LookupError("Couldn't resolve configuration file. To define it \n "
+                      "  - Set the environment variable SKVO_CONFIG, or \n "
                       "  - add conf/skvo.ini under your virtualenv root\n")
 
 config = ConfigParser(defaults={
     'config': '',
 })
 logger.info("Parse config file: {}".format(venv_config))
-config.read(venv_config)
+config.read(config_file)
 
 SKVO_BASE_PATH = config.get("general", "base_path")
 SKVO_EXPORT_PATH = config.get("general", "export_path")
