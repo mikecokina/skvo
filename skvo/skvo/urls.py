@@ -28,6 +28,9 @@ from rest_framework.reverse import reverse
 def api_root(request, *args, **kwargs):
     return Response({
         'photometry-lookup': reverse('photometry-lookup-post', request=request),
+        'photometry-lookup-get-coo': reverse('photometry-lookup-get-coo', request=request),
+        'photometry-lookup-get-target': reverse('photometry-lookup-get-target', request=request),
+        'photometry-access-reference': reverse('photometry-aref', request=request),
         'metadata': reverse('metadata', request=request),
     })
 
