@@ -1,0 +1,31 @@
+#!/bin/bash
+
+SCRIPTPATH="$(cd "$(dirname "$0")" ; pwd -P)"
+# PACKAGE_NAME=${PACKAGE_NAME:-skvo-$(git describe --tags --dirty)}
+PACKAGE_NAME=${PACKAGE_NAME:-skvo-0.1.0}
+PACKAGE_DIR=${PACKAGE_DIR:-'/tmp'}
+
+set -e
+
+
+echo ======================================================================
+echo packaging
+echo ======================================================================
+
+# echo $PACKAGE_DIR
+# echo $SCRIPTPATH
+# echo $PACKAGE_NAME
+
+tar cvfz $PACKAGE_DIR/${PACKAGE_NAME}.tar.gz \
+    --transform 's,^,skvo/,' \
+    --exclude db.sqlite3 \
+    --exclude '*.pyc' \
+    --exclude media \
+    --exclude env36 \
+    --exclude env \
+    --exclude wiki \
+    --exclude deployment \
+    --exclude docs \
+    --exclude idea \
+    skvo/ \
+    requirements
