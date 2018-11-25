@@ -7,6 +7,14 @@
     state: present
   notify: restart supervisor
 
+- name: ensure /etc/supervisor/supervisor.d/ exists
+  file:
+    path: "/etc/supervisor/supervisord.d"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
 - name: create supervisor socket file
   raw: "mkdir -p /var/run/supervisor/ && touch /var/run/supervisor/supervisor.sock"
 

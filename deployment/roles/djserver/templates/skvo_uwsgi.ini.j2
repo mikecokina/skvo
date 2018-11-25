@@ -6,7 +6,7 @@ redirect_stderr=true
 stdout_logfile={{ djserver_logs }}/skvo-uwsgi-server.log
 stdout_logfile_maxbytes=10MB
 stdout_logfile_backups=4
-environment=PYTHONPATH={{ djserver_dist }},METARS_CONFIG={{ djserver_dir }}/skvo.ini
+environment=PYTHONPATH={{ djserver_dist }},SKVO_CONFIG={{ djserver_dir }}/skvo.ini
 killasgroup=true
 stopasgroup=true
 autorestart=true

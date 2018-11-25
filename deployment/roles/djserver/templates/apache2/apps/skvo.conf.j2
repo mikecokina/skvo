@@ -1,0 +1,21 @@
+    # skvo apache config file
+   
+    ServerName skvo.science.upjs.sk
+    ServerAdmin mikecokina@gmail.com
+
+    <Directory "{{ djserver_dist }}/skvo/skvo/static/">
+      Require all granted
+    </Directory>
+
+    <Directory "{{ djserver_dir }}/media">
+      Require all granted
+    </Directory>
+    
+    ProxyPass /skvo_static !
+    ProxyPass /media_static !
+
+    Alias /skvo_media {{ djserver_dir }}/media
+    Alias /skvo_static {{ djserver_dist }}/skvo/skvo/static
+
+    ProxyPass / uwsgi://127.0.0.1:17300/
+
