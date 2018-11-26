@@ -12,16 +12,21 @@
 - name: adding www-data (apache) to skvo group  
   raw: usermod -aG skvo www-data
 
-- name: enable mod rewrite
-  command: a2enmod rewrite
-
-- name: copy module configuration files
-  copy:
-    src: "{{ item }}"
-    dest: /etc/apache2/conf-enabled
-  notify: restart apache
+- name: enable mod proxy
+  apache2_module:
+    state: present
+    name: "{{ item }}"
   with_items:
-    - 00-uwsgi.conf
+    - proxy
+    - proxy_http
+    - proxy_balancer
+    - lbmethod_byrequests
+
+
+- name: enable mod rewrite
+  apache2_module:
+    state: present
+    name: rewrite
 
 - name: generate default apache config
   template:
