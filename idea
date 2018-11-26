@@ -1,3 +1,52 @@
 CREATE USER 'newuser'@'localhost' IDENTIFIED BY 'password';
 GRANT ALL PRIVILEGES ON * . * TO 'newuser'@'localhost';
 FLUSH PRIVILEGES;
+
+
+<VirtualHost skvo.science.upjs.sk:80>
+    ServerName skvo.science.upjs.sk
+    DocumentRoot "/opt/skvo"
+    RewriteEngine On
+
+    # IncludeOptional conf.d/apps/*.conf
+
+    # RewriteRule "^/opentsdb$" "/opentsdb/" [L,R]
+    # ProxyPass /opentsdb http://127.0.0.1:4242 
+
+    ProxyPreserveHost On
+    RewriteRule "^/supervisor$" "/supervisor/" [L,R]
+    ProxyPass /supervisor http://127.0.0.1:9001
+
+    ServerAdmin mikecokina@gmail.com
+    <Directory /opt/skvo>
+      Require all granted
+    </Directory>
+
+    <Directory "/opt/skvo/djserver/dist/skvo/skvo/static/">
+      Require all granted
+    </Directory>
+
+    <Directory "/opt/skvo/djserver/media">
+      Require all granted
+    </Directory>
+
+    ProxyPass /skvo_static !
+    ProxyPass /media_static !
+
+    Alias /skvo_media /opt/skvo/djserver/media
+    Alias /skvo_static /opt/skvo/djserver/dist/skvo/skvo/static
+
+    ProxyPass "/" "http://127.0.0.1:17300/"
+    ProxyPassReverse "/"  "http://127.0.0.1:17300/"
+
+
+</VirtualHost>
+
+<VirtualHost bootes.science.upjs.sk:80>
+    ServerName bootes.science.upjs.sk
+    DocumentRoot "/opt/skvo"
+    RewriteEngine On
+    Redirect 403 /
+
+</VirtualHost>
+
