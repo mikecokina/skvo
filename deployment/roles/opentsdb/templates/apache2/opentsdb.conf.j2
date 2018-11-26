@@ -1,0 +1,4 @@
+    ServerName bootes.science.upjs.sk
+    RewriteRule "^/opentsdb$" "/opentsdb/" [L,R]
+    ProxyPass /opentsdb http://127.0.0.1:4242
+

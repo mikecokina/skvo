@@ -87,7 +87,11 @@
     name: opentsdb
     state: started
 
-
+- name: create apache2 config
+  copy:
+    src: templates/apache2/opentsdb.conf.j2
+    dest: /etc/apache2/conf.d/apps/opentsdb.conf
+  notify: restart apache2
 
 
 
