@@ -1,0 +1,22 @@
+<VirtualHost skvo.science.upjs.sk:80>
+    ServerName skvo.science.upjs.sk
+    DocumentRoot "/opt/skvo"
+    RewriteEngine On
+
+    IncludeOptional conf.d/apps/*.conf
+
+    RewriteRule "^/opentsdb$" "/opentsdb/" [L,R]
+    ProxyPass /opentsdb http://127.0.0.1:4242
+
+    RewriteRule "^/supervisor$" "/supervisor/" [L,R]
+    ProxyPass /supervisor http://127.0.0.1:9001
+
+</VirtualHost>
+
+<VirtualHost bootes.science.upjs.sk:80>
+    ServerName bootes.science.upjs.sk
+    DocumentRoot "/opt/skvo"
+    RewriteEngine On
+    Redirect 403 /
+
+</VirtualHost>
