@@ -4,5 +4,10 @@
 - name: restart supervisor
   service:
     name: supervisor
+    stme: restart supervisor
+
+- name: restart apache
+  service:
+    name: apache2
     state: restarted
 

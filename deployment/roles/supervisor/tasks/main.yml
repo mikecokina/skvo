@@ -34,4 +34,9 @@
     name: supervisor
     state: started
 
+- name: generate supervisor config file for apache2 exists
+  template:
+    src: supervisor.conf.j2
+    dest: /etc/apache2/conf.d/apps/supervisor.conf
+  notify: restart apache
 
