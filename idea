@@ -5,11 +5,11 @@ FLUSH PRIVILEGES;
 
 <VirtualHost skvo.science.upjs.sk:80>
     ServerName skvo.science.upjs.sk
-    DocumentRoot "/opt/skvo"
+    DocumentRoot "/opt/skvo/www"
     RewriteEngine On
 
     # IncludeOptional conf.d/apps/*.conf
-
+    
     # RewriteRule "^/opentsdb$" "/opentsdb/" [L,R]
     # ProxyPass /opentsdb http://127.0.0.1:4242 
 
@@ -32,21 +32,29 @@ FLUSH PRIVILEGES;
 
     ProxyPass /skvo_static !
     ProxyPass /media_static !
-
+    
     Alias /skvo_media /opt/skvo/djserver/media
     Alias /skvo_static /opt/skvo/djserver/dist/skvo/skvo/static
 
-    ProxyPass "/" "http://127.0.0.1:17300/"
-    ProxyPassReverse "/"  "http://127.0.0.1:17300/"
-
-
+    ProxyPass "/api" "http://127.0.0.1:17300/api"
+    ProxyPassReverse "/api"  "http://127.0.0.1:17300/api"
+ 
 </VirtualHost>
 
 <VirtualHost bootes.science.upjs.sk:80>
     ServerName bootes.science.upjs.sk
-    DocumentRoot "/opt/skvo"
-    RewriteEngine On
-    Redirect 403 /
+    RewriteRule "^/astronomy$" "/astronomy/" [L,R]
 
+    DirectoryIndex index.html index.php
+    DocumentRoot /opt/astronomy
+    
+    Alias "/astronomy" "/opt/astronomy"
+
+    <Directory "/opt/astronomy">
+      Require all granted
+    </Directory>
+
+    # DocumentRoot "/opt/skvo"
+    # RewriteEngine On
+    # Redirect 403 /
 </VirtualHost>
-
