@@ -36,9 +36,9 @@
     dest: /etc/apache2/sites-enabled/skvo.conf
   notify: restart apache
 
-- name: create dir for apps configs
+- name: create dir for skvo configs
   file:
-    path: /etc/apache2/conf.d/apps
+    path: /etc/apache2/skvo.d/
     state: directory
 
 - name: ensure that apache is enabled

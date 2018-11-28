@@ -453,9 +453,11 @@ You have probably noticed, that data in tables are represented as and real comma
 not any decimal position same margin files or any different similar bullshits.
 
 When data are loaded to memory, from the given informations a metadata json is created. An exmaple of metadata json is shown above
-in section `Metadata`_ . Created metadata json is 'POSTed' on listening endpoint of SKVO Django server, and so ``/api/photometry/metadata``.
+in section `Metadata`_ . Created metadata json is 'POSTed' on listening endpoint of SKVO Django server, and so ``/api/photometry/metadata/``.
 This endpoint will return a response based on serializer which contain generated uuid4 of observation and databsae observation id.
 The observation id is used in observation id metrics which are linkin database metadata and other observation OpenTSDB metrics.
+Mentioned endpoint allows only POST method and has to be authenticated with correct ``username`` and ``password`` sent in
+header as ``headers={"username": "user", "password": "****"}``
 
 Now observation data are processed. It is mean, all necessary metrics described in `Observation (time series) data:`_ are created.
 Basically, pandas dataframes are converted to the python list of dicts shown above, no big deal. Finally, all created metrics are
@@ -477,6 +479,8 @@ additional metadta is serialized to the following schema::
 
 Raw content is GZIPed before operation of serialisation and md5 CRC sum is computet from gziped object. Such schema is converted to
 **avro** binary and this bytes like object is POSTed to endpoint ``/api/photometry/media/`` where avro is decoded and file is stored.
+Mentioned endpoint allows only POST method and has to be authenticated with correct ``username`` and ``password`` sent in
+header as ``headers={"username": "user", "password": "****"}``
 
 Serialized informations are encoded to avro, based on the following schema::
 

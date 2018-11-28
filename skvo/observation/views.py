@@ -13,6 +13,9 @@ from datapipe.photometry import transform
 from datapipe.photometry import filesystem
 
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from auth.auth import SkvoBasicAuthentication
+
 from observation import models
 
 import logging
@@ -20,10 +23,11 @@ logger = logging.getLogger("observation.view")
 # Create your views here.
 
 
-# todo: !!!important!!! refactor all to viewsets and add upload metadata restriction by users
-
-
-class PhotometryList(generics.ListCreateAPIView):
+class PhotometryListCreate(
+    generics.ListCreateAPIView
+):
+    authentication_classes = (SkvoBasicAuthentication, )
+    permission_classes = (IsAuthenticatedOrReadOnly, )
     queryset = models.Photometry.objects.all()
 
     def get_serializer_class(self):
@@ -55,6 +59,7 @@ def get_mediafile_dir(msg_content):
 
 class PhotometryMedia(APIView):
     parser_classes = (FileUploadParser, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request, *args, **kwargs):
         if 'file' not in request.data:
