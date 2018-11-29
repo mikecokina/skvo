@@ -63,6 +63,8 @@ class MetadataHttpImporter(AbstractHttpImporter):
         self._logger = logging.getLogger(OpenTsdbHttpImporter.__name__)
         self._server = server
         self._session = requests.Session()
+        self.username = kwargs.get('username')
+        self.password = kwargs.get('password')
 
     @property
     def host(self):
@@ -79,7 +81,9 @@ class MetadataHttpImporter(AbstractHttpImporter):
     def imp(self, json_data):
         headers = {
             'Content-type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'USERNAME': self.username,
+            'PASSWORD': self.password
         }
         r = self._session.post(self.api_endpoint, data=json.dumps(json_data), headers=headers)
         self._session.close()

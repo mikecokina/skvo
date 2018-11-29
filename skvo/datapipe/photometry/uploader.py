@@ -61,7 +61,9 @@ def async_import(lambda_fns):
 
 class MetadataProcessor(object):
     def __init__(self, server=None):
-        self._importer = MetadataHttpImporter(server=server or "http://localhost:8082")
+        self._importer = MetadataHttpImporter(server=server or "http://localhost:8082",
+                                              username=gconf.parser.get("auth", "username"),
+                                              password=gconf.parser.get("auth", "password"))
         self._logger = logging.getLogger(MetadataProcessor.__name__)
 
     @staticmethod
